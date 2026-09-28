@@ -1,0 +1,48 @@
+name: Generar instalador Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-installer:
+    runs-on: windows-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Compilar aplicación
+        shell: cmd
+        run: .\mvnw.cmd clean package
+
+      - name: Preparar archivos del instalador
+        shell: pwsh
+        run: .\installer\prepare-installer.ps1
+
+      - name: Instalar Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+
+      - name: Compilar instalador
+        shell: pwsh
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ".\installer\SistemaComercial.iss"'
+
+      - name: Publicar instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: SistemaComercial-Setup
+          path: installer/output/SistemaComercial-Setup.exe
+          if-no-files-found: error
