@@ -1,7 +1,5 @@
 package com.khabalita.sistemacomercial.service;
 
-import com.khabalita.sistemacomercial.Entities.Brand;
-import com.khabalita.sistemacomercial.Entities.Category;
 import com.khabalita.sistemacomercial.Entities.Coin;
 import com.khabalita.sistemacomercial.Entities.IvaType;
 import com.khabalita.sistemacomercial.Entities.Provider;
@@ -11,6 +9,7 @@ import com.khabalita.sistemacomercial.Repositories.CoinRepository;
 import com.khabalita.sistemacomercial.Repositories.IvaTypeRepository;
 import com.khabalita.sistemacomercial.Repositories.ProductRepository;
 import com.khabalita.sistemacomercial.Repositories.ProviderRepository;
+import com.khabalita.sistemacomercial.Service.ProductImportService;
 import com.khabalita.sistemacomercial.dto.response.ProductImportResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

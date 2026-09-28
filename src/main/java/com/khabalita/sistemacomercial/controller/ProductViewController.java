@@ -10,9 +10,8 @@ import com.khabalita.sistemacomercial.Service.IProductService;
 import com.khabalita.sistemacomercial.Service.IProviderService;
 import com.khabalita.sistemacomercial.dto.response.ProductImportResult;
 import com.khabalita.sistemacomercial.dto.request.PriceUpdateRequest;
-import com.khabalita.sistemacomercial.dto.response.PriceChangePreview;
-import com.khabalita.sistemacomercial.service.ProductImportService;
-import com.khabalita.sistemacomercial.service.ProductImageService;
+import com.khabalita.sistemacomercial.Service.ProductImportService;
+import com.khabalita.sistemacomercial.Service.ProductImageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -38,7 +37,6 @@ import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.io.IOException;
-import java.util.List;
 
 @Controller
 @RequestMapping("/ui/products")

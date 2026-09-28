@@ -1,4 +1,4 @@
-package com.khabalita.sistemacomercial.service;
+package com.khabalita.sistemacomercial.Service;
 
 import java.math.BigDecimal;
 

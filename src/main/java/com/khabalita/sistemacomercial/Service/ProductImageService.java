@@ -1,4 +1,4 @@
-package com.khabalita.sistemacomercial.service;
+package com.khabalita.sistemacomercial.Service;
 
 import com.khabalita.sistemacomercial.Entities.Product;
 import com.khabalita.sistemacomercial.Entities.ProductImage;

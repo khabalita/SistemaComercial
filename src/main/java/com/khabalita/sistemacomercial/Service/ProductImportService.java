@@ -1,8 +1,5 @@
-package com.khabalita.sistemacomercial.service;
+package com.khabalita.sistemacomercial.Service;
 
-import com.khabalita.sistemacomercial.Entities.Brand;
-import com.khabalita.sistemacomercial.Entities.Category;
-import com.khabalita.sistemacomercial.Entities.Coin;
 import com.khabalita.sistemacomercial.Entities.Product;
 import com.khabalita.sistemacomercial.Entities.Provider;
 import com.khabalita.sistemacomercial.Repositories.BrandRepository;
