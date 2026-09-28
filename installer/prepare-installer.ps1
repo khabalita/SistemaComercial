@@ -1,5 +1,5 @@
 param(
-    [string]$MySqlVersion = "8.4.6",
+    [string]$MySqlVersion = "8.4.11",
     [string]$MySqlUrl = "",
     [string]$VcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe",
     [switch]$SkipDownloads

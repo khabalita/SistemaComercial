@@ -33,7 +33,7 @@ Después abrir `installer/SistemaComercial.iss` con Inno Setup y presionar **Com
 installer/output/SistemaComercial-Setup.exe
 ```
 
-El script descarga MySQL 8.4.6 desde el sitio oficial. Si cambia la URL, puede indicarse manualmente:
+El script descarga MySQL 8.4.11 desde el sitio oficial. Si cambia la URL, puede indicarse manualmente:
 
 ```powershell
 ./installer/prepare-installer.ps1 -MySqlUrl 'URL_DEL_ZIP_DE_MYSQL'
