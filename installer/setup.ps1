@@ -21,6 +21,14 @@ if ($AdminPassword.Length -lt 8) {
 New-Item $ConfigDir -ItemType Directory -Force | Out-Null
 New-Item (Join-Path $AppDir "data\product-images") -ItemType Directory -Force | Out-Null
 
+$VcRedist = Join-Path $AppDir "vcredist_x64.exe"
+if (Test-Path $VcRedist) {
+    $vcProcess = Start-Process -FilePath $VcRedist -ArgumentList "/install /quiet /norestart" -Wait -PassThru
+    if ($vcProcess.ExitCode -notin @(0, 1638, 3010)) {
+        throw "No se pudo instalar Microsoft Visual C++ Redistributable. Código: $($vcProcess.ExitCode)"
+    }
+}
+
 @"
 [mysqld]
 basedir=$($MySqlDir.Replace('\','/'))

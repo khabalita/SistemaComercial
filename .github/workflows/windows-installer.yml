@@ -26,11 +26,26 @@ jobs:
 
       - name: Compilar aplicación
         shell: cmd
-        run: .\mvnw.cmd clean package -DskipTests
+        run: .\mvnw.cmd clean package
 
       - name: Preparar archivos del instalador
         shell: pwsh
         run: .\installer\prepare-installer.ps1
+
+      - name: Verificar payload del instalador
+        shell: pwsh
+        run: |
+          $required = @(
+            '.\installer\payload\app\sistemacomercial.jar',
+            '.\installer\payload\java\bin\java.exe',
+            '.\installer\payload\mysql\bin\mysqld.exe',
+            '.\installer\payload\vcredist_x64.exe'
+          )
+          foreach ($file in $required) {
+            if (-not (Test-Path $file)) {
+              throw "Falta el archivo requerido: $file"
+            }
+          }
 
       - name: Instalar Inno Setup
         shell: pwsh

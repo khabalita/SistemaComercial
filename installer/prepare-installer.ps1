@@ -1,6 +1,7 @@
 param(
     [string]$MySqlVersion = "8.4.6",
     [string]$MySqlUrl = "",
+    [string]$VcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe",
     [switch]$SkipDownloads
 )
 
@@ -27,6 +28,15 @@ Copy-Item (Join-Path $InstallerDir "setup.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "backup.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "uninstall.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "start-sistema.bat") $PayloadDir
+
+$VcRedist = Join-Path $PayloadDir "vcredist_x64.exe"
+if (-not $SkipDownloads -and -not (Test-Path $VcRedist)) {
+    Write-Host "Descargando Microsoft Visual C++ Redistributable"
+    Invoke-WebRequest -Uri $VcRedistUrl -OutFile $VcRedist
+}
+if (-not (Test-Path $VcRedist)) {
+    throw "No se encontró vcredist_x64.exe."
+}
 
 $JavaDir = Join-Path $PayloadDir "java"
 if (-not (Test-Path $JavaDir)) {

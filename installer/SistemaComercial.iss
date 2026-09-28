@@ -22,6 +22,7 @@ UninstallDisplayIcon={app}\java\bin\java.exe
 Source: "payload\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "payload\java\*"; DestDir: "{app}\java"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "payload\mysql\*"; DestDir: "{app}\mysql"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "payload\vcredist_x64.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\setup.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\backup.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\uninstall.ps1"; DestDir: "{app}"; Flags: ignoreversion
@@ -35,7 +36,7 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{a
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\uninstall.ps1"""; Flags: runhidden waituntilterminated
 
 [Run]
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File \"{app}\setup.ps1\" -AdminPassword \"{code:GetAdminPassword}\""; Flags: runhidden waituntilterminated
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\setup.ps1"" -AdminPassword ""{code:GetAdminPassword}"""; Flags: runhidden waituntilterminated
 Filename: "{app}\{#MyAppExeName}"; Description: "Iniciar Sistema Comercial"; Flags: postinstall nowait skipifsilent
 
 [Code]
