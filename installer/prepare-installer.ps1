@@ -1,6 +1,6 @@
 param(
     [string]$MySqlVersion = "8.4.6",
-    [string]$MySqlUrl = "https://cdn.mysql.com/Downloads/MySQL-8.4/mysql-8.4.6-winx64.zip",
+    [string]$MySqlUrl = "",
     [string]$VcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe",
     [switch]$SkipDownloads
 )
