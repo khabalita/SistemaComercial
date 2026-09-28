@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso no autorizado</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<main class="standalone-page">
+    <div class="card error-card">
+        <div class="error-code">403</div>
+        <h2>Acceso no autorizado</h2>
+        <p>No tenés permisos para acceder a esta sección.</p>
+        <p th:if="${currentUsername}" th:text="|Usuario: ${currentUsername} · Rol: ${currentRole}|"></p>
+        <div class="actions">
+            <a th:href="@{/ui/products}" class="button">Volver al inicio</a>
+            <form method="post" th:action="@{/logout}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="button secondary">Cambiar usuario</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

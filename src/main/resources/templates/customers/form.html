@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${isEdit} ? 'Editar cliente' : 'Nuevo cliente'">Cliente</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <h2 th:text="${isEdit} ? 'Editar cliente' : 'Nuevo cliente'"></h2>
+
+        <div th:if="${errorMessage}" class="form-error">
+            <strong th:text="${errorMessage}"></strong>
+            <ul th:if="${fieldErrors}" style="margin:6px 0 0 16px;padding:0;">
+                <li th:each="e : ${fieldErrors}" th:text="${e}"></li>
+            </ul>
+        </div>
+
+        <form th:action="@{${isEdit} ? '/ui/customers/' + ${itemId} + '/edit' : '/ui/customers/new'}"
+              method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-grid">
+                <div>
+                    <label>Nombre / Razon social *</label>
+                    <input type="text" name="name" th:value="${customer.name}" required maxlength="150">
+                </div>
+                <div>
+                    <label>CUIT / DNI</label>
+                    <input type="text" name="taxId" th:value="${customer.taxId}" maxlength="20">
+                </div>
+                <div>
+                    <label>Teléfono</label>
+                    <input type="text" name="phone" th:value="${customer.phone}" maxlength="20">
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" name="email" th:value="${customer.email}" maxlength="100">
+                </div>
+                <div>
+                    <label>Localidad</label>
+                    <input type="text" name="city" th:value="${customer.city}" maxlength="100">
+                </div>
+                <div>
+                    <label>Provincia</label>
+                    <input type="text" name="province" th:value="${customer.province}" maxlength="100">
+                </div>
+                <div>
+                    <label>Código postal</label>
+                    <input type="text" name="postalCode" th:value="${customer.postalCode}" maxlength="20">
+                </div>
+                <div>
+                    <label>Dirección</label>
+                    <input type="text" name="address" th:value="${customer.address}" maxlength="200">
+                </div>
+                <div class="full">
+                    <label>Notas</label>
+                    <textarea name="notes" rows="3" maxlength="1000"
+                              style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;"
+                              th:text="${customer.notes}"></textarea>
+                </div>
+                <div class="full">
+                    <label style="display:flex;align-items:center;gap:6px;">
+                        <input type="checkbox" name="active" value="true"
+                               th:checked="${customer.active == null or customer.active}"
+                               style="width:auto;">
+                        Cliente activo
+                    </label>
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="button">Guardar</button>
+                <a th:href="@{/ui/customers}" class="button secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

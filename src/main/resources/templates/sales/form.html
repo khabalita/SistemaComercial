@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva venta</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .line-row { display:grid; grid-template-columns: 3fr 0.9fr 1.1fr 1fr 1.2fr 32px; gap:8px; align-items:end; margin-bottom:8px; }
+        .line-row .remove { background:var(--danger); color:white; border:0; padding:8px; border-radius:6px; cursor:pointer; }
+        .line-row .remove:hover { background:var(--danger-hover); }
+    </style>
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <div class="toolbar">
+            <h2 style="margin:0;">Nueva venta (nota interna)</h2>
+            <a th:href="@{/ui/sales}" class="button secondary">Volver</a>
+        </div>
+
+        <div th:if="${errorMessage}" class="form-error" th:text="${errorMessage}"></div>
+
+        <form method="post" th:action="@{/ui/sales/new}" id="sale-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-grid">
+                <div>
+                    <label>Cliente (opcional)</label>
+                    <select name="customerId">
+                        <option value="">-- Consumidor Final --</option>
+                        <option th:each="c : ${customers}"
+                                th:value="${c.id}"
+                                th:text="${c.name}"
+                                th:selected="${customerId != null and customerId == c.id}"></option>
+                    </select>
+                </div>
+                <div class="full">
+                    <label>Notas</label>
+                    <textarea name="notes" rows="2" maxlength="1000"
+                              style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;"
+                              th:text="${notes}"></textarea>
+                </div>
+            </div>
+
+            <h3 style="margin-top:24px;">Items</h3>
+            <div id="lines">
+                <div class="line-row" th:each="i : ${#numbers.sequence(1, lineCount)}" th:id="'line-' + ${i}">
+                    <div>
+                        <label>Producto</label>
+                        <div class="product-picker">
+                            <input type="text" class="product-search" placeholder="Buscar por codigo o nombre..." autocomplete="off" required>
+                            <input type="hidden" name="productId"
+                                   th:value="${selectedProductIds != null and i <= selectedProductIds.size() ? selectedProductIds[i-1] : ''}">
+                            <div class="product-results" role="listbox"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Cantidad</label>
+                        <input type="number" th:name="'quantity'" min="1" required
+                               th:value="${quantities != null and i <= quantities.size() ? quantities[i-1] : ''}">
+                    </div>
+                    <div>
+                        <label>Precio</label>
+                        <input type="number" class="line-price" step="0.01" readonly>
+                    </div>
+                    <div>
+                        <label>Desc. (%)</label>
+                        <input type="number" th:name="'lineDiscount'" min="0" max="100" step="0.01"
+                               th:value="${lineDiscounts != null and i <= lineDiscounts.size() ? lineDiscounts[i-1] : ''}">
+                    </div>
+                    <div>
+                        <label>Total</label>
+                        <input type="number" class="line-total" step="0.01" readonly value="0.00">
+                    </div>
+                    <button type="button" class="remove" onclick="removeLine(this)">×</button>
+                </div>
+            </div>
+            <button type="button" class="button secondary" onclick="addLine()" style="margin-top:8px;">+ Agregar línea</button>
+
+            <div class="sale-totals" aria-live="polite">
+                <div><span>Subtotal bruto</span><strong id="sale-subtotal">0.00</strong></div>
+                <div><span>Descuentos por producto</span><strong id="sale-line-discount">0.00</strong></div>
+                <div><span>Subtotal de venta</span><strong id="sale-net-subtotal">0.00</strong></div>
+                <div class="general-discount-field">
+                    <label for="generalDiscountPercent">Descuento general (%)</label>
+                    <input id="generalDiscountPercent" name="generalDiscountPercent" type="number"
+                           min="0" max="100" step="0.01" th:value="${generalDiscountPercent}">
+                    <strong id="sale-general-discount">0.00</strong>
+                </div>
+                <div><span>Descuento total</span><strong id="sale-discount">0.00</strong></div>
+                <div class="sale-total"><span>Total general</span><strong id="sale-total">0.00</strong></div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="button">Confirmar venta</button>
+                <a th:href="@{/ui/sales}" class="button secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script th:inline="javascript">
+    let lineIdx = /*[[${lineCount}]]*/ 3;
+    const products = /*[[${products}]]*/ [];
+
+    function productLabel(product) {
+        return `${product.internalCode || '-'} - ${product.name || '-'}`;
+    }
+
+    function formatAmount(value) {
+        return Number.isFinite(value) ? value.toFixed(2) : '0.00';
+    }
+
+    function updateRowTotal(row) {
+        const price = Number.parseFloat(row.querySelector('.line-price').value) || 0;
+        const quantity = Number.parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
+        const discount = Number.parseFloat(row.querySelector('input[name="lineDiscount"]').value) || 0;
+        const gross = price * quantity;
+        const total = gross * (1 - discount / 100);
+        row.querySelector('.line-total').value = formatAmount(total);
+        return { gross, total };
+    }
+
+    function updateSaleTotals() {
+        let subtotal = 0;
+        let lineTotal = 0;
+        document.querySelectorAll('.line-row').forEach(row => {
+            const line = updateRowTotal(row);
+            subtotal += line.gross;
+            lineTotal += line.total;
+        });
+        const lineDiscount = subtotal - lineTotal;
+        const generalPercent = Number.parseFloat(document.getElementById('generalDiscountPercent').value) || 0;
+        const generalDiscount = lineTotal * (generalPercent / 100);
+        const total = lineTotal - generalDiscount;
+        document.getElementById('sale-subtotal').textContent = formatAmount(subtotal);
+        document.getElementById('sale-line-discount').textContent = formatAmount(lineDiscount);
+        document.getElementById('sale-net-subtotal').textContent = formatAmount(lineTotal);
+        document.getElementById('sale-general-discount').textContent = formatAmount(generalDiscount);
+        document.getElementById('sale-discount').textContent = formatAmount(lineDiscount + generalDiscount);
+        document.getElementById('sale-total').textContent = formatAmount(total);
+    }
+
+    function productSearchText(product) {
+        return [product.internalCode, product.barCode, product.name]
+            .filter(Boolean).join(' ').toLocaleLowerCase();
+    }
+
+    function closeResults() {
+        document.querySelectorAll('.product-results').forEach(results => results.classList.remove('open'));
+    }
+
+    function showResults(picker, query) {
+        const results = picker.querySelector('.product-results');
+        results.replaceChildren();
+        const normalized = query.trim().toLocaleLowerCase();
+        if (!normalized) {
+            results.classList.remove('open');
+            return;
+        }
+
+        const matches = products.filter(product => productSearchText(product).includes(normalized)).slice(0, 15);
+        if (!matches.length) {
+            const empty = document.createElement('div');
+            empty.className = 'product-result-empty';
+            empty.textContent = 'No se encontraron productos';
+            results.appendChild(empty);
+        } else {
+            matches.forEach(product => {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'product-result';
+                option.setAttribute('role', 'option');
+                option.textContent = productLabel(product);
+                option.addEventListener('click', () => selectProduct(picker, product));
+                results.appendChild(option);
+            });
+        }
+        results.classList.add('open');
+    }
+
+    function selectProduct(picker, product) {
+        const search = picker.querySelector('.product-search');
+        search.value = productLabel(product);
+        search.setCustomValidity('');
+        picker.querySelector('input[name="productId"]').value = product.id;
+        picker.querySelector('.product-results').classList.remove('open');
+        picker.closest('.line-row').querySelector('.line-price').value = product.salePrice || '';
+        updateSaleTotals();
+    }
+
+    function initializePicker(picker) {
+        const search = picker.querySelector('.product-search');
+        const hidden = picker.querySelector('input[name="productId"]');
+        const selected = products.find(product => String(product.id) === String(hidden.value));
+        if (selected) {
+            search.value = productLabel(selected);
+            picker.closest('.line-row').querySelector('.line-price').value = selected.salePrice || '';
+        }
+
+        search.addEventListener('input', () => {
+            hidden.value = '';
+            search.setCustomValidity('');
+            showResults(picker, search.value);
+        });
+        search.addEventListener('focus', () => showResults(picker, search.value));
+        search.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                picker.querySelector('.product-results').classList.remove('open');
+                search.blur();
+            }
+        });
+        picker.closest('.line-row').querySelectorAll('input[name="quantity"], input[name="lineDiscount"]')
+            .forEach(input => input.addEventListener('input', updateSaleTotals));
+    }
+
+    function addLine() {
+        lineIdx++;
+        const lines = document.getElementById('lines');
+        const row = document.createElement('div');
+        row.className = 'line-row';
+        row.id = 'line-' + lineIdx;
+        row.innerHTML = `
+            <div>
+                <label>Producto</label>
+                <div class="product-picker">
+                    <input type="text" class="product-search" placeholder="Buscar por codigo o nombre..." autocomplete="off" required>
+                    <input type="hidden" name="productId">
+                    <div class="product-results" role="listbox"></div>
+                </div>
+            </div>
+            <div>
+                <label>Cantidad</label>
+                <input type="number" name="quantity" min="1" required>
+            </div>
+            <div>
+                <label>Precio</label>
+                <input type="number" class="line-price" step="0.01" readonly>
+            </div>
+            <div>
+                <label>Desc. (%)</label>
+                <input type="number" name="lineDiscount" min="0" max="100" step="0.01">
+            </div>
+            <div>
+                <label>Total</label>
+                <input type="number" class="line-total" step="0.01" readonly value="0.00">
+            </div>
+            <button type="button" class="remove" onclick="removeLine(this)">×</button>
+        `;
+        lines.appendChild(row);
+        initializePicker(row.querySelector('.product-picker'));
+        updateSaleTotals();
+    }
+
+    function removeLine(btn) {
+        const lines = document.getElementById('lines');
+        if (lines.children.length <= 1) return;
+        btn.closest('.line-row').remove();
+    }
+
+    document.querySelectorAll('.product-picker').forEach(initializePicker);
+    document.querySelectorAll('input[name="quantity"], input[name="lineDiscount"]')
+        .forEach(input => input.addEventListener('input', updateSaleTotals));
+    document.getElementById('generalDiscountPercent').addEventListener('input', updateSaleTotals);
+    updateSaleTotals();
+    document.getElementById('sale-form').addEventListener('submit', event => {
+        const invalidPicker = [...document.querySelectorAll('.product-picker')]
+            .find(picker => !picker.querySelector('input[name="productId"]').value);
+        if (!invalidPicker) return;
+        event.preventDefault();
+        const search = invalidPicker.querySelector('.product-search');
+        search.setCustomValidity('Seleccione un producto de la lista.');
+        search.reportValidity();
+        search.focus();
+    });
+    document.addEventListener('click', event => {
+        if (!event.target.closest('.product-picker')) closeResults();
+    });
+</script>
+</body>
+</html>

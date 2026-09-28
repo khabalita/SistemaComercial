@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle} ?: 'Sistema Comercial'">Sistema Comercial</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:fragment="header" class="sidebar">
+    <h1><a th:href="@{/ui/products}">Sistema Comercial</a></h1>
+    <div class="current-user" th:if="${currentUsername}">
+        <div class="current-user-name" th:text="${currentUsername}"></div>
+        <div class="current-user-role" th:text="${currentRole}"></div>
+    </div>
+    <nav>
+        <a th:href="@{/ui/products}"><span aria-hidden="true">▦</span> Productos</a>
+        <th:block th:if="${isAdmin}">
+            <a th:href="@{/ui/categories}"><span aria-hidden="true">▤</span> Categorías</a>
+            <a th:href="@{/ui/brands}"><span aria-hidden="true">◇</span> Marcas</a>
+            <a th:href="@{/ui/providers}"><span aria-hidden="true">▣</span> Proveedores</a>
+            <a th:href="@{/ui/customers}"><span aria-hidden="true">♙</span> Clientes</a>
+            <a th:href="@{/ui/users}"><span aria-hidden="true">♟</span> Usuarios</a>
+            <a th:href="@{/ui/audit}"><span aria-hidden="true">▧</span> Auditoría</a>
+        </th:block>
+        <a th:href="@{/ui/sales}"><span aria-hidden="true">▤</span> Ventas</a>
+    </nav>
+    <div class="sidebar-footer" th:if="${currentUsername}">
+        <button type="button" id="theme-toggle" class="sidebar-action theme-toggle" aria-pressed="false">
+            <span><span class="theme-toggle-icon" aria-hidden="true">◐</span> <span class="theme-toggle-label">Modo oscuro</span></span>
+        </button>
+        <form method="post" th:action="@{/logout}"
+              onsubmit="return confirm('¿Desea cambiar de usuario? Se cerrará la sesión actual.');">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit" class="sidebar-action">Cambiar usuario</button>
+        </form>
+        <form method="post" th:action="@{/logout}"
+              onsubmit="return confirm('¿Desea cerrar el sistema? Se cerrará la sesión actual.');">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit" class="sidebar-action danger">Cerrar programa</button>
+        </form>
+    </div>
+    <script>
+        (function () {
+            const root = document.documentElement;
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') root.dataset.theme = 'dark';
+
+            const toggle = document.getElementById('theme-toggle');
+            if (!toggle) return;
+            const label = toggle.querySelector('.theme-toggle-label');
+            const icon = toggle.querySelector('.theme-toggle-icon');
+            const update = () => {
+                const dark = root.dataset.theme === 'dark';
+                toggle.setAttribute('aria-pressed', String(dark));
+                label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+                icon.textContent = dark ? '○' : '◐';
+            };
+            toggle.addEventListener('click', () => {
+                const dark = root.dataset.theme !== 'dark';
+                if (dark) {
+                    root.dataset.theme = 'dark';
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    root.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+                update();
+            });
+            update();
+        }());
+    </script>
+</header>
+
+<div th:fragment="flash" class="flash-container">
+    <div th:if="${ok}" class="card flash flash-ok" th:text="${ok}"></div>
+    <div th:if="${error}" class="card flash flash-err" th:text="${error}"></div>
+</div>
+
+<div th:fragment="actions" class="actions">
+    <th:block th:replace="${actions} ?: ~{}"></th:block>
+</div>
+</body>
+</html>

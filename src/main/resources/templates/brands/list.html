@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Marcas</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <div class="toolbar">
+            <h2 style="margin:0;">Marcas</h2>
+            <a th:href="@{/ui/brands/new}" class="button">+ Nueva marca</a>
+        </div>
+
+        <form class="filters" method="get" th:action="@{/ui/brands}">
+            <input type="text" name="name" placeholder="Buscar por nombre" th:value="${name}">
+            <button type="submit" class="button secondary">Filtrar</button>
+            <a th:href="@{/ui/brands}" class="button secondary">Limpiar</a>
+        </form>
+
+        <table>
+            <thead>
+            <tr><th>Nombre</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(brands)}">
+                <td colspan="2" class="empty-state">Sin marcas cargadas.</td>
+            </tr>
+            <tr th:each="b : ${brands}">
+                <td th:text="${b.name}"></td>
+                <td>
+                    <a th:href="@{|/ui/brands/${b.id}/edit|}" class="icon-button edit" title="Editar marca" aria-label="Editar marca">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5Zm16.7-10.3a.9.9 0 0 0 0-1.3l-1.6-1.6a.9.9 0 0 0-1.3 0l-1.4 1.4 3.5 3.5 1.4-1.4Z"/></svg>
+                        <span class="sr-only">Editar</span>
+                    </a>
+                    <form th:action="@{|/ui/brands/${b.id}/delete|}" method="post" style="display:inline;"
+                          onsubmit="return confirm('¿Eliminar la marca ' + '[[${b.name}]]' + '?');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="icon-button delete" title="Eliminar marca" aria-label="Eliminar marca">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-.7 13H6.7L6 7Zm3-3h6l1 2H8l1-2Zm-5 2h16v2H4V6Z"/></svg>
+                            <span class="sr-only">Eliminar</span>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination" th:if="${page.totalPages > 1}">
+            <a th:if="${page.hasPrevious()}"
+               th:href="@{/ui/brands(page=${page.number - 1},name=${name})}"
+               class="button small secondary">Anterior</a>
+            <span th:text="|Página ${page.number + 1} de ${page.totalPages}|"></span>
+            <a th:if="${page.hasNext()}"
+               th:href="@{/ui/brands(page=${page.number + 1},name=${name})}"
+               class="button small secondary">Siguiente</a>
+        </div>
+        <div class="pagination-info" th:text="${page.totalElements} + ' marcas'"></div>
+    </div>
+</main>
+</body>
+</html>

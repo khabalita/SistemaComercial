@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Auditoría</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <h2>Auditoría</h2>
+        <table>
+            <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Resultado</th><th>Entidad</th><th>Detalle</th><th>IP</th></tr></thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(auditLogs)}"><td colspan="7">Sin registros.</td></tr>
+            <tr th:each="log : ${auditLogs}">
+                <td th:text="${log.createdAt}"></td>
+                <td th:text="${log.username}"></td>
+                <td th:text="${log.action}"></td>
+                <td th:text="${log.outcome}"></td>
+                <td th:text="${log.entityType + (log.entityId != null ? ' #' + log.entityId : '')}"></td>
+                <td th:text="${log.details}"></td>
+                <td th:text="${log.ipAddress}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="pagination-info" th:text="${page.totalElements} + ' registros'"></div>
+    </div>
+</main>
+</body>
+</html>

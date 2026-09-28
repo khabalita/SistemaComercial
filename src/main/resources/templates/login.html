@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Comercial | Iniciar sesión</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="login-page">
+<main class="login-main">
+    <div class="login-card card">
+        <div class="login-brand">
+            <div class="login-mark" aria-hidden="true">SC</div>
+            <div>
+                <h1>Sistema Comercial</h1>
+                <p>Administración simple y ordenada</p>
+            </div>
+        </div>
+        <div class="login-heading">
+            <h2>Iniciar sesión</h2>
+            <p>Ingresá tus credenciales para continuar.</p>
+        </div>
+        <div th:if="${param.error}" class="form-error">Usuario o contraseña incorrectos.</div>
+        <div th:if="${param.logout}" class="flash flash-ok">Sesión cerrada.</div>
+        <form method="post" th:action="@{/login}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <label>Usuario</label>
+            <input type="text" name="username" required autofocus>
+            <label>Contraseña</label>
+            <input type="password" name="password" required>
+            <button type="submit" class="button login-submit">Ingresar</button>
+        </form>
+    </div>
+    <p class="login-footer">Acceso seguro al sistema</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Nota de venta ' + ${sale.number}">Nota de venta</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="print-body">
+<div class="print-actions no-print">
+    <button type="button" class="button" onclick="window.print()">Imprimir nota</button>
+    <span>Si no aparece el diálogo, presione el botón para intentarlo nuevamente.</span>
+</div>
+<main class="print-page">
+    <section class="print-header">
+        <div>
+            <h1>NOTA DE VENTA</h1>
+            <strong>USO INTERNO - SIN VALIDEZ FISCAL</strong>
+        </div>
+        <div class="print-number">
+            <div><span>Número</span><strong th:text="${sale.number}"></strong></div>
+            <div><span>Fecha</span><strong th:text="${#temporals.format(sale.date, 'dd/MM/yyyy HH:mm')}"></strong></div>
+        </div>
+    </section>
+
+    <section class="print-customer">
+        <h2>Cliente</h2>
+        <div class="print-customer-grid">
+            <div><span>Nombre</span><strong th:text="${sale.customerName ?: 'Consumidor Final'}"></strong></div>
+            <div><span>Domicilio</span><strong th:text="${sale.customerAddress ?: '-'}"></strong></div>
+            <div><span>Localidad</span><strong th:text="${sale.customerCity ?: '-'}"></strong></div>
+        </div>
+    </section>
+
+    <table class="print-items">
+        <thead>
+        <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th class="number">Cant.</th>
+            <th class="number">Precio unit.</th>
+            <th class="number">Importe</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${sale.items}">
+            <td th:text="${item.productInternalCode ?: '-'}"></td>
+            <td th:text="${item.productName}"></td>
+            <td class="number" th:text="${item.quantity}"></td>
+            <td class="number" th:text="${item.unitPrice}"></td>
+            <td class="number" th:text="${item.lineTotal}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <section class="print-summary">
+        <div><span>Subtotal bruto</span><strong th:text="${sale.subtotal}"></strong></div>
+        <div><span>Descuentos</span><strong th:text="${sale.discount + (sale.generalDiscountAmount ?: 0)}"></strong></div>
+        <div><span>IVA incluido</span><strong th:text="${sale.ivaAmount ?: 0}"></strong></div>
+        <div class="print-total"><span>TOTAL</span><strong th:text="${sale.total}"></strong></div>
+    </section>
+
+    <section class="print-notes" th:if="${sale.notes}">
+        <strong>Notas</strong>
+        <p th:text="${sale.notes}"></p>
+    </section>
+
+    <footer class="print-footer">
+        <span>Documento interno de control comercial</span>
+    </footer>
+</main>
+<script>
+    window.addEventListener('load', () => {
+        window.setTimeout(() => window.print(), 200);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Importar productos</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <h2>Importar productos</h2>
+        <p>Use la plantilla y complete los datos. Solo se crean productos nuevos; los códigos internos existentes se rechazan.</p>
+        <p>
+            <a th:href="@{/ui/products/template.xlsx}" class="button secondary">Descargar plantilla XLSX</a>
+            <a th:href="@{/ui/products/template.csv}" class="button secondary">Descargar plantilla CSV</a>
+        </p>
+        <form th:action="@{/ui/products/import/validate}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <label>Archivo XLSX o CSV</label>
+            <input type="file" name="file" accept=".xlsx,.csv" required>
+            <button type="submit" class="button">Validar sin guardar</button>
+        </form>
+        <form th:action="@{/ui/products/import/save}" method="post" enctype="multipart/form-data" style="margin-top:16px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <label>Archivo validado</label>
+            <input type="file" name="file" accept=".xlsx,.csv" required>
+            <button type="submit" class="button">Validar y guardar</button>
+        </form>
+    </div>
+
+    <div class="card" th:if="${result}">
+        <h3 th:text="${result.valid ? 'Archivo valido' : 'Archivo rechazado'}"></h3>
+        <p th:text="|Filas detectadas: ${result.totalRows}. Filas aceptadas: ${result.acceptedRows}.|"></p>
+        <div th:if="${!result.errors.isEmpty()}" class="form-error">
+            <strong>Errores encontrados:</strong>
+            <ul>
+                <li th:each="error : ${result.errors}" th:text="${error}"></li>
+            </ul>
+        </div>
+        <p th:if="${result.valid}">Para guardar, seleccioná nuevamente el mismo archivo y presioná “Validar y guardar”.</p>
+    </div>
+</main>
+</body>
+</html>

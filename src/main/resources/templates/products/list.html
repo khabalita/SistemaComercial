@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Productos</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <div class="toolbar">
+            <h2 style="margin:0;">Productos</h2>
+            <div>
+                <a th:href="@{/ui/products/import}" class="button secondary">Importar</a>
+                <a th:href="@{/ui/products/prices}" class="button secondary">Actualizar precios</a>
+                <a th:href="@{/ui/products/export.xlsx}" class="button secondary">Exportar XLSX</a>
+                <a th:href="@{/ui/products/new}" class="button">+ Nuevo producto</a>
+            </div>
+        </div>
+
+        <form class="filters" method="get" th:action="@{/ui/products}">
+            <input type="text" name="name" placeholder="Buscar por nombre" th:value="${param.name}">
+            <input type="text" name="category" placeholder="Categoria" th:value="${param.category}">
+            <input type="text" name="brand" placeholder="Marca" th:value="${param.brand}">
+            <input type="text" name="provider" placeholder="Proveedor" th:value="${param.provider}">
+            <button type="submit" class="button secondary">Filtrar</button>
+            <a th:href="@{/ui/products}" class="button secondary">Limpiar</a>
+        </form>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Codigo</th>
+                <th>Nombre</th>
+                <th>Categoria</th>
+                <th>Marca</th>
+                <th>Proveedor</th>
+                <th>Stock</th>
+                <th>Precio venta</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(products)}">
+                <td colspan="8" class="empty-state">Sin productos cargados.</td>
+            </tr>
+            <tr th:each="p : ${products}">
+                <td th:text="${p.internalCode}"></td>
+                <td th:text="${p.name}"></td>
+                <td th:text="${p.categoryName} ?: '-'"></td>
+                <td th:text="${p.brandName} ?: '-'"></td>
+                <td th:text="${p.providerName}"></td>
+                <td>
+                    <span th:text="${p.stock}"
+                          th:classappend="${p.minStock != null and p.stock < p.minStock} ? 'tag low' : 'tag'"></span>
+                </td>
+                <td>
+                    <span th:text="${p.coinCode} + ' ' + ${p.salePrice}"></span>
+                </td>
+                <td>
+                    <a th:href="@{|/ui/products/${p.id}|}" class="icon-button view" title="Ver producto" aria-label="Ver producto">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20.7 19.3-4.2-4.2a7.5 7.5 0 1 0-1.4 1.4l4.2 4.2a1 1 0 0 0 1.4-1.4ZM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0Z"/></svg>
+                        <span class="sr-only">Ver producto</span>
+                    </a>
+                    <a th:href="@{|/ui/products/${p.id}#product-image|}" class="icon-button image" title="Ver imagen" aria-label="Ver imagen">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v10h16V7H4Zm2 8 3.5-4 2.5 3 2-2.5L18 15H6Z"/></svg>
+                        <span class="sr-only">Ver imagen</span>
+                    </a>
+                    <a th:href="@{|/ui/products/${p.id}/edit|}" class="icon-button edit" title="Editar producto" aria-label="Editar producto">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16.5V20h3.5L18.8 8.7l-3.5-3.5L4 16.5Zm16.7-10.3a.9.9 0 0 0 0-1.3l-1.6-1.6a.9.9 0 0 0-1.3 0l-1.4 1.4 3.5 3.5 1.4-1.4Z"/></svg>
+                        <span class="sr-only">Editar</span>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination" th:if="${page.totalPages > 1}">
+            <a th:if="${page.hasPrevious()}"
+               th:href="@{/ui/products(page=${page.number - 1},name=${name},category=${category},brand=${brand},provider=${provider})}"
+               class="button small secondary">Anterior</a>
+            <span th:text="|Página ${page.number + 1} de ${page.totalPages}|"></span>
+            <a th:if="${page.hasNext()}"
+               th:href="@{/ui/products(page=${page.number + 1},name=${name},category=${category},brand=${brand},provider=${provider})}"
+               class="button small secondary">Siguiente</a>
+        </div>
+        <div class="pagination-info" th:text="${page.totalElements} + ' productos'"></div>
+    </div>
+</main>
+</body>
+</html>

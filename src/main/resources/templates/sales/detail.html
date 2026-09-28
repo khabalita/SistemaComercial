@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Venta ' + ${sale.number}">Venta</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <div class="toolbar">
+            <h2 style="margin:0;" th:text="'Venta ' + ${sale.number}"></h2>
+            <div>
+                <a th:href="@{|/ui/sales/${sale.id}/print|}" class="button" target="_blank">Imprimir nota</a>
+                <a th:href="@{/ui/sales}" class="button secondary">Volver</a>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div><label>Número</label><div th:text="${sale.number}"></div></div>
+            <div><label>Fecha</label><div th:text="${#temporals.format(sale.date, 'yyyy-MM-dd HH:mm')}"></div></div>
+            <div><label>Cliente</label><div th:text="${sale.customerName} ?: 'Consumidor Final'"></div></div>
+            <div><label>Subtotal</label><div th:text="${sale.subtotal}"></div></div>
+            <div><label>Descuentos</label><div th:text="${sale.discount + (sale.generalDiscountAmount ?: 0)}"></div></div>
+            <div><label>IVA incluido</label><div th:text="${sale.ivaAmount} ?: '0.00'"></div></div>
+            <div><label>Total</label><div><strong th:text="${sale.total}"></strong></div></div>
+        </div>
+
+        <div th:if="${sale.notes}" style="margin-top:12px;">
+            <label>Notas</label>
+            <div th:text="${sale.notes}" style="white-space:pre-wrap;"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Items</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unit.</th>
+                <th>Total línea</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="it : ${sale.items}">
+                <td th:text="${it.productInternalCode}"></td>
+                <td th:text="${it.productName}"></td>
+                <td th:text="${it.quantity}"></td>
+                <td th:text="${it.unitPrice}"></td>
+                <td><strong th:text="${it.lineTotal}"></strong></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+</body>
+</html>

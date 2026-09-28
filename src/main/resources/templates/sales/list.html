@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <div class="toolbar">
+            <h2 style="margin:0;">Ventas</h2>
+            <a th:href="@{/ui/sales/new}" class="button">+ Nueva venta</a>
+        </div>
+
+        <form class="filters" method="get" th:action="@{/ui/sales}">
+            <input type="text" name="customer" placeholder="Filtrar por cliente" th:value="${customer}">
+            <input type="text" name="product" placeholder="Filtrar por producto" th:value="${product}">
+            <button type="submit" class="button secondary">Filtrar</button>
+            <a th:href="@{/ui/sales}" class="button secondary">Limpiar</a>
+        </form>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Número</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(sales)}">
+                <td colspan="6" class="empty-state">Sin ventas cargadas.</td>
+            </tr>
+            <tr th:each="s : ${sales}">
+                <td th:text="${s.number}"></td>
+                <td th:text="${#temporals.format(s.date, 'yyyy-MM-dd HH:mm')}"></td>
+                <td th:text="${s.customerName} ?: 'Consumidor Final'"></td>
+                <td th:text="${#lists.size(s.items)}"></td>
+                <td th:text="${s.total}"></td>
+                <td><a th:href="@{|/ui/sales/${s.id}|}" class="icon-button view" title="Ver venta" aria-label="Ver venta">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20.7 19.3-4.2-4.2a7.5 7.5 0 1 0-1.4 1.4l4.2 4.2a1 1 0 0 0 1.4-1.4ZM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0Z"/></svg>
+                    <span class="sr-only">Ver venta</span>
+                 </a>
+                 <a th:href="@{|/ui/sales/${s.id}/print|}" class="icon-button image" title="Imprimir nota" aria-label="Imprimir nota" target="_blank">
+                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12v5h2a2 2 0 0 1 2 2v7h-4v6H6v-6H2V9a2 2 0 0 1 2-2h2V2Zm2 2v3h8V4H8Zm8 16v-5H8v5h8Zm2-8a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+                     <span class="sr-only">Imprimir nota</span>
+                 </a></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination" th:if="${page.totalPages > 1}">
+            <a th:if="${page.hasPrevious()}"
+               th:href="@{/ui/sales(page=${page.number - 1},customer=${customer},product=${product})}"
+               class="button small secondary">Anterior</a>
+            <span th:text="|Página ${page.number + 1} de ${page.totalPages}|"></span>
+            <a th:if="${page.hasNext()}"
+               th:href="@{/ui/sales(page=${page.number + 1},customer=${customer},product=${product})}"
+               class="button small secondary">Siguiente</a>
+        </div>
+        <div class="pagination-info" th:text="${page.totalElements} + ' ventas' "></div>
+    </div>
+</main>
+</body>
+</html>

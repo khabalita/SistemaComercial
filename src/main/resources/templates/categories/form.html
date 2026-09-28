@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${isEdit} ? 'Editar categoría' : 'Nueva categoría'">Categoría</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="card">
+        <h2 th:text="${isEdit} ? 'Editar categoría' : 'Nueva categoría'"></h2>
+
+        <div th:if="${errorMessage}" class="form-error">
+            <strong th:text="${errorMessage}"></strong>
+            <ul th:if="${fieldErrors}" style="margin:6px 0 0 16px;padding:0;">
+                <li th:each="e : ${fieldErrors}" th:text="${e}"></li>
+            </ul>
+        </div>
+
+        <form th:action="@{${isEdit} ? '/ui/categories/' + ${itemId} + '/edit' : '/ui/categories/new'}"
+              method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="form-grid">
+                <div class="full">
+                    <label>Nombre *</label>
+                    <input type="text" name="name" th:value="${category.name}" required maxlength="100">
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="button">Guardar</button>
+                <a th:href="@{/ui/categories}" class="button secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>
