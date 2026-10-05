@@ -1,5 +1,6 @@
 package com.khabalita.sistemacomercial.dto.response;
 
+import com.khabalita.sistemacomercial.Entities.SalePaymentMethod;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -14,6 +15,7 @@ public record SaleResponseDto(
         LocalDateTime date,
         Long customerId,
         String customerName,
+        SalePaymentMethod paymentMethod,
         BigDecimal subtotal,
         BigDecimal discount,
         BigDecimal generalDiscountPercent,

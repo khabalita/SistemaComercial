@@ -26,6 +26,7 @@ public class SaleMapper {
                 .date(entity.getDate())
                 .customerId(customer != null ? customer.getId() : null)
                 .customerName(customer != null ? customer.getName() : null)
+                .paymentMethod(entity.getPaymentMethod())
                 .customerAddress(customer != null ? customer.getAddress() : null)
                 .customerCity(customer != null ? customer.getCity() : null)
                 .subtotal(entity.getSubtotal())

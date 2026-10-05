@@ -6,11 +6,13 @@ import com.khabalita.sistemacomercial.Entities.Item;
 import com.khabalita.sistemacomercial.Entities.Product;
 import com.khabalita.sistemacomercial.Entities.Sale;
 import com.khabalita.sistemacomercial.Entities.SaleSequence;
+import com.khabalita.sistemacomercial.Entities.SalePaymentMethod;
 import com.khabalita.sistemacomercial.Repositories.CustomerRepository;
 import com.khabalita.sistemacomercial.Repositories.ProductRepository;
 import com.khabalita.sistemacomercial.Repositories.SaleRepository;
 import com.khabalita.sistemacomercial.Repositories.SaleSequenceRepository;
 import com.khabalita.sistemacomercial.Service.ISaleService;
+import com.khabalita.sistemacomercial.Service.ICustomerAccountService;
 import com.khabalita.sistemacomercial.dto.request.ItemRequestDto;
 import com.khabalita.sistemacomercial.dto.request.SaleRequestDto;
 import com.khabalita.sistemacomercial.dto.response.SaleResponseDto;
@@ -41,6 +43,7 @@ public class SaleServiceImpl implements ISaleService {
     private final ProductMapper productMapper;
     private final SaleMapper saleMapper;
     private final SaleSequenceRepository saleSequenceRepository;
+    private final ICustomerAccountService customerAccountService;
 
     @Override
     @Transactional(readOnly = true)
@@ -111,6 +114,7 @@ public class SaleServiceImpl implements ISaleService {
 
         Sale sale = Sale.builder()
                 .date(LocalDateTime.now())
+                .paymentMethod(dto.paymentMethod() == null ? SalePaymentMethod.CASH : dto.paymentMethod())
                 .notes(dto.notes())
                 .subtotal(BigDecimal.ZERO)
                 .discount(BigDecimal.ZERO)
@@ -125,6 +129,10 @@ public class SaleServiceImpl implements ISaleService {
                     .orElseThrow(() -> new EntityNotFoundException(
                             "Customer not found: " + dto.customerId()));
             sale.setCustomer(customer);
+        }
+
+        if (sale.getPaymentMethod() == SalePaymentMethod.CURRENT_ACCOUNT && sale.getCustomer() == null) {
+            throw new IllegalArgumentException("La venta a cuenta corriente requiere un cliente");
         }
 
         sale.setNumber(generateNextNumber());
@@ -182,6 +190,9 @@ public class SaleServiceImpl implements ISaleService {
         sale.setIvaAmount(calculateIvaAmount(sale));
 
         Sale saved = saleRepository.save(sale);
+        if (saved.getPaymentMethod() == SalePaymentMethod.CURRENT_ACCOUNT) {
+            customerAccountService.registerSaleDebit(saved);
+        }
         return saleMapper.toDto(saved);
     }
 

@@ -32,6 +32,11 @@ public class Sale extends AuditableEntity {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 20)
+    @Builder.Default
+    private SalePaymentMethod paymentMethod = SalePaymentMethod.CASH;
+
     @Column(name = "subtotal", nullable = false, precision = 12, scale = 2)
     private BigDecimal subtotal;
 

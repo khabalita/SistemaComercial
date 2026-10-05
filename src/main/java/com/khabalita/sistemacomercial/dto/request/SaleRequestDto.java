@@ -1,5 +1,6 @@
 package com.khabalita.sistemacomercial.dto.request;
 
+import com.khabalita.sistemacomercial.Entities.SalePaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -12,6 +13,8 @@ import java.math.BigDecimal;
 public record SaleRequestDto(
 
         Long customerId,
+
+        SalePaymentMethod paymentMethod,
 
         @Size(max = 2000, message = "Las notas no pueden superar los 2000 caracteres")
         String notes,

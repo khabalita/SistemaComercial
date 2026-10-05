@@ -229,6 +229,11 @@ a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 nav a.active { font-weight: 600; text-decoration: underline; }
 .form-error { background: var(--error-bg); color: var(--error-text); padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; }
+.form-help, .muted { color: var(--text-muted); font-size: 0.8rem; }
+.account-balance-card { align-items: flex-start; display: flex; flex-direction: column; gap: 4px; }
+.account-balance { font-size: 1.8rem; }
+.account-balance.debt { color: var(--danger); }
+.account-balance.paid { color: var(--success-text); }
 .login-page { align-items: center; background: linear-gradient(135deg, #eff6ff 0%, var(--page-bg) 55%, #eef2ff 100%); justify-content: center; }
 .login-main { max-width: 440px; padding: 24px; }
 .login-card { padding: 30px; border: 1px solid rgba(37, 99, 235, 0.12); box-shadow: 0 18px 45px rgba(30, 64, 175, 0.12); }

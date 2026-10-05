@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cuenta corriente</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <div class="toolbar">
+        <div>
+            <h2 style="margin:0;">Cuenta corriente</h2>
+            <p class="muted" th:text="${account.customerName}"></p>
+        </div>
+        <a th:href="@{/ui/customers}" class="button secondary">Volver</a>
+    </div>
+
+    <div th:if="${errorMessage}" class="form-error" th:text="${errorMessage}"></div>
+
+    <div class="card account-balance-card">
+        <span class="muted">Saldo pendiente</span>
+        <strong class="account-balance" th:classappend="${account.balance.signum() > 0 ? 'debt' : 'paid'}"
+                th:text="${'$ ' + #numbers.formatDecimal(account.balance, 1, 2)}"></strong>
+    </div>
+
+    <div class="card">
+        <h3>Registrar pago</h3>
+        <form method="post" th:action="@{|/ui/customers/${account.customerId}/account/payments|}" class="form-grid">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div>
+                <label for="amount">Importe</label>
+                <input id="amount" type="number" name="amount" min="0.01" step="0.01" required th:value="${payment.amount}">
+            </div>
+            <div>
+                <label for="concept">Concepto</label>
+                <input id="concept" type="text" name="concept" maxlength="500" required th:value="${payment.concept}">
+            </div>
+            <div class="full actions">
+                <button type="submit" class="button">Registrar pago</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Movimientos</h3>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                <tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Venta</th><th>Importe</th><th>Usuario</th></tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(account.movements)}">
+                    <td colspan="6" class="empty-state">Sin movimientos.</td>
+                </tr>
+                <tr th:each="movement : ${account.movements}">
+                    <td th:text="${#temporals.format(movement.movementDate, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${movement.type.name() == 'DEBIT' ? 'Débito' : 'Pago'}"></td>
+                    <td th:text="${movement.concept}"></td>
+                    <td>
+                        <a th:if="${movement.saleId != null}" th:href="@{|/ui/sales/${movement.saleId}|}"
+                           th:text="${movement.saleNumber}"></a>
+                        <span th:if="${movement.saleId == null}">-</span>
+                    </td>
+                    <td th:text="${'$ ' + #numbers.formatDecimal(movement.amount, 1, 2)}"></td>
+                    <td th:text="${movement.createdBy}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

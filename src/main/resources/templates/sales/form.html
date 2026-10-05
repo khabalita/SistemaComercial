@@ -35,6 +35,14 @@
                                 th:selected="${customerId != null and customerId == c.id}"></option>
                     </select>
                 </div>
+                <div>
+                    <label>Forma de pago</label>
+                    <select name="paymentMethod">
+                        <option value="CASH" th:selected="${paymentMethod == null or paymentMethod.name() == 'CASH'}">Contado</option>
+                        <option value="CURRENT_ACCOUNT" th:selected="${paymentMethod != null and paymentMethod.name() == 'CURRENT_ACCOUNT'}">Cuenta corriente</option>
+                    </select>
+                    <small class="form-help">La cuenta corriente requiere seleccionar un cliente.</small>
+                </div>
                 <div class="full">
                     <label>Notas</label>
                     <textarea name="notes" rows="2" maxlength="1000"

@@ -1,5 +1,6 @@
 package com.khabalita.sistemacomercial.controller;
 
+import com.khabalita.sistemacomercial.Entities.SalePaymentMethod;
 import com.khabalita.sistemacomercial.Service.ICustomerService;
 import com.khabalita.sistemacomercial.Service.IProductService;
 import com.khabalita.sistemacomercial.Service.ISaleService;
@@ -53,6 +54,7 @@ public class SaleViewController {
         model.addAttribute("customers", customerService.getAllCustomers());
         model.addAttribute("products", productService.getAllProducts());
         model.addAttribute("lineCount", 3);
+        model.addAttribute("paymentMethod", SalePaymentMethod.CASH);
         return "sales/form";
     }
 
@@ -60,13 +62,14 @@ public class SaleViewController {
     public String create(@RequestParam(required = false) Long customerId,
                          @RequestParam(required = false) String notes,
                           @RequestParam("productId") List<Long> productIds,
-                          @RequestParam("quantity") List<Integer> quantities,
-                          @RequestParam(value = "lineDiscount", required = false) List<BigDecimal> discounts,
-                          @RequestParam(value = "generalDiscountPercent", required = false) BigDecimal generalDiscountPercent,
-                          RedirectAttributes ra, Model model) {
+                           @RequestParam("quantity") List<Integer> quantities,
+                           @RequestParam(value = "lineDiscount", required = false) List<BigDecimal> discounts,
+                           @RequestParam(value = "generalDiscountPercent", required = false) BigDecimal generalDiscountPercent,
+                           @RequestParam(defaultValue = "CASH") SalePaymentMethod paymentMethod,
+                           RedirectAttributes ra, Model model) {
         try {
             SaleRequestDto dto = buildRequest(customerId, notes, productIds, quantities, discounts,
-                    generalDiscountPercent);
+                    generalDiscountPercent, paymentMethod);
             SaleResponseDto created = saleService.createSale(dto);
             ra.addFlashAttribute("ok", "Venta " + created.number() + " creada.");
             return "redirect:/ui/sales/" + created.id();
@@ -80,6 +83,7 @@ public class SaleViewController {
             model.addAttribute("quantities", quantities);
             model.addAttribute("lineDiscounts", discounts == null ? new ArrayList<>() : discounts);
             model.addAttribute("generalDiscountPercent", generalDiscountPercent);
+            model.addAttribute("paymentMethod", paymentMethod);
             model.addAttribute("errorMessage", friendlyMessage(e));
             return "sales/form";
         }
@@ -108,9 +112,10 @@ public class SaleViewController {
     }
 
     private SaleRequestDto buildRequest(Long customerId, String notes,
-                                         List<Long> productIds, List<Integer> quantities,
-                                         List<BigDecimal> discounts,
-                                         BigDecimal generalDiscountPercent) {
+                                          List<Long> productIds, List<Integer> quantities,
+                                          List<BigDecimal> discounts,
+                                          BigDecimal generalDiscountPercent,
+                                          SalePaymentMethod paymentMethod) {
         List<ItemRequestDto> items = new ArrayList<>();
         for (int i = 0; i < productIds.size(); i++) {
             Long pid = productIds.get(i);
@@ -126,6 +131,7 @@ public class SaleViewController {
         }
         return SaleRequestDto.builder()
                 .customerId(customerId)
+                .paymentMethod(paymentMethod)
                 .notes(notes)
                 .generalDiscountPercent(generalDiscountPercent)
                 .items(items)

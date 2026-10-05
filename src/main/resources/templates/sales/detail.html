@@ -22,6 +22,11 @@
             <div><label>Número</label><div th:text="${sale.number}"></div></div>
             <div><label>Fecha</label><div th:text="${#temporals.format(sale.date, 'yyyy-MM-dd HH:mm')}"></div></div>
             <div><label>Cliente</label><div th:text="${sale.customerName} ?: 'Consumidor Final'"></div></div>
+            <div><label>Forma de pago</label><div th:text="${sale.paymentMethod != null and sale.paymentMethod.name() == 'CURRENT_ACCOUNT' ? 'Cuenta corriente' : 'Contado'}"></div></div>
+            <div th:if="${sale.customerId != null and sale.paymentMethod != null and sale.paymentMethod.name() == 'CURRENT_ACCOUNT'}">
+                <label>Cuenta corriente</label>
+                <a th:href="@{|/ui/customers/${sale.customerId}/account|}">Ver cuenta del cliente</a>
+            </div>
             <div><label>Subtotal</label><div th:text="${sale.subtotal}"></div></div>
             <div><label>Descuentos</label><div th:text="${sale.discount + (sale.generalDiscountAmount ?: 0)}"></div></div>
             <div><label>IVA incluido</label><div th:text="${sale.ivaAmount} ?: '0.00'"></div></div>
