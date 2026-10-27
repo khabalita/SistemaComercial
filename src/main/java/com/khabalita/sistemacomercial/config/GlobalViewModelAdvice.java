@@ -1,5 +1,7 @@
 package com.khabalita.sistemacomercial.config;
 
+import com.khabalita.sistemacomercial.Service.BusinessLogoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.ui.Model;
@@ -7,7 +9,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class GlobalViewModelAdvice {
+
+    private final BusinessLogoService businessLogoService;
 
     @ModelAttribute
     public void addAuthenticatedUser(Model model, Authentication authentication) {
@@ -16,6 +21,7 @@ public class GlobalViewModelAdvice {
             model.addAttribute("currentUsername", null);
             model.addAttribute("currentRole", null);
             model.addAttribute("isAdmin", false);
+            model.addAttribute("businessLogoAvailable", false);
             return;
         }
 
@@ -28,5 +34,6 @@ public class GlobalViewModelAdvice {
         model.addAttribute("currentUsername", authentication.getName());
         model.addAttribute("currentRole", role);
         model.addAttribute("isAdmin", "ADMIN".equals(role));
+        model.addAttribute("businessLogoAvailable", businessLogoService.hasLogo());
     }
 }

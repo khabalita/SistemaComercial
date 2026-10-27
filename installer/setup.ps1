@@ -20,6 +20,7 @@ if ($AdminPassword.Length -lt 8) {
 
 New-Item $ConfigDir -ItemType Directory -Force | Out-Null
 New-Item (Join-Path $AppDir "data\product-images") -ItemType Directory -Force | Out-Null
+New-Item (Join-Path $AppDir "data\business-assets") -ItemType Directory -Force | Out-Null
 
 $VcRedist = Join-Path $AppDir "vcredist_x64.exe"
 if (Test-Path $VcRedist) {
@@ -72,6 +73,7 @@ spring.datasource.password=$DbPassword
 app.security.initial-admin-username=admin
 app.security.initial-admin-password=$AdminPassword
 app.storage.product-images=$($AppDir.Replace('\','/'))/data/product-images
+app.storage.business-assets=$($AppDir.Replace('\','/'))/data/business-assets
 "@ | Set-Content (Join-Path $ConfigDir "application.properties") -Encoding UTF8
 
 & (Join-Path $AppDir "backup.ps1") -InstallTask -DbPassword $DbPassword

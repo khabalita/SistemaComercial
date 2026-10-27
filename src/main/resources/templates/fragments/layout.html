@@ -7,7 +7,12 @@
 </head>
 <body>
 <header th:fragment="header" class="sidebar">
-    <h1><a th:href="@{/ui/products}">Sistema Comercial</a></h1>
+    <h1 class="sidebar-brand">
+        <a th:href="@{/ui/products}">
+            <img th:if="${businessLogoAvailable}" th:src="@{/ui/settings/logo}" alt="Logo del negocio">
+            <span th:unless="${businessLogoAvailable}">Sistema Comercial</span>
+        </a>
+    </h1>
     <div class="current-user" th:if="${currentUsername}">
         <div class="current-user-name" th:text="${currentUsername}"></div>
         <div class="current-user-role" th:text="${currentRole}"></div>
@@ -21,6 +26,7 @@
             <a th:href="@{/ui/customers}"><span aria-hidden="true">♙</span> Clientes</a>
             <a th:href="@{/ui/users}"><span aria-hidden="true">♟</span> Usuarios</a>
             <a th:href="@{/ui/audit}"><span aria-hidden="true">▧</span> Auditoría</a>
+            <a th:href="@{/ui/settings}"><span aria-hidden="true">⚙</span> Configuración</a>
         </th:block>
         <a th:href="@{/ui/sales}"><span aria-hidden="true">▤</span> Ventas</a>
     </nav>

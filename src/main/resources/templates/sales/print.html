@@ -12,9 +12,13 @@
 </div>
 <main class="print-page">
     <section class="print-header">
-        <div>
-            <h1>NOTA DE VENTA</h1>
-            <strong>USO INTERNO - SIN VALIDEZ FISCAL</strong>
+        <div class="print-brand">
+            <img th:if="${businessLogoAvailable}" class="print-brand-logo"
+                 th:src="@{/ui/settings/logo}" alt="Logo del negocio">
+            <div>
+                <h1>NOTA DE VENTA</h1>
+                <strong>USO INTERNO - SIN VALIDEZ FISCAL</strong>
+            </div>
         </div>
         <div class="print-number">
             <div><span>Número</span><strong th:text="${sale.number}"></strong></div>

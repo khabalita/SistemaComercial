@@ -12,6 +12,8 @@
     <div class="card">
         <div class="toolbar">
             <h2 style="margin:0;" th:text="'Venta ' + ${sale.number}"></h2>
+            <img th:if="${businessLogoAvailable}" class="sale-detail-logo"
+                 th:src="@{/ui/settings/logo}" alt="Logo del negocio">
             <div>
                 <a th:href="@{|/ui/sales/${sale.id}/print|}" class="button" target="_blank">Imprimir nota</a>
                 <a th:href="@{/ui/sales}" class="button secondary">Volver</a>

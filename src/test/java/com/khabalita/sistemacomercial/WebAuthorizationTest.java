@@ -69,6 +69,23 @@ class WebAuthorizationTest {
     }
 
     @Test
+    void admin_canManageBusinessLogo() throws Exception {
+        mockMvc.perform(get("/ui/settings")
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin-test").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("settings/business"))
+                .andExpect(model().attribute("logoAvailable", false));
+    }
+
+    @Test
+    void seller_cannotManageBusinessLogo() throws Exception {
+        mockMvc.perform(get("/ui/settings")
+                        .with(SecurityMockMvcRequestPostProcessors.user("seller").roles("VENDEDOR")))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/error/403"));
+    }
+
+    @Test
     void loginPage_isRendered() throws Exception {
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())

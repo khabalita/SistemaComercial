@@ -68,6 +68,8 @@ También se puede ejecutar manualmente desde una consola de PowerShell como admi
 
 Conviene copiar periódicamente la carpeta `backups` a otro disco o almacenamiento externo. La desinstalación no debería usarse como método de backup: conservar una copia externa antes de actualizar.
 
+Los backups incluyen tanto `data/product-images` como `data/business-assets`, donde se guarda el logo del comercio.
+
 ## Primera prueba
 
 Verificar login, creación de usuarios, productos, imágenes, ventas, descuentos, stock, impresión y ejecución de un backup manual antes de entregar la PC.

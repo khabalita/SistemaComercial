@@ -20,12 +20,14 @@ if ($InstallTask) {
 `$BackupDir = Join-Path `$AppDir 'backups'
 `$MysqlDump = Join-Path `$AppDir 'mysql\bin\mysqldump.exe'
 `$Images = Join-Path `$AppDir 'data\product-images'
+`$BusinessAssets = Join-Path `$AppDir 'data\business-assets'
 New-Item `$BackupDir -ItemType Directory -Force | Out-Null
 `$stamp = Get-Date -Format 'yyyy-MM-dd_HH-mm-ss'
 `$sql = Join-Path `$BackupDir "sistemacomercial_`$stamp.sql"
 & `$MysqlDump --protocol=tcp -h 127.0.0.1 -u sistema_app -p'$escaped' sistemacomercial > `$sql
 if (`$LASTEXITCODE -ne 0) { throw 'mysqldump falló.' }
 Compress-Archive -Path `$Images -DestinationPath (Join-Path `$BackupDir "product-images_`$stamp.zip") -Force
+if ((Test-Path `$BusinessAssets) -and (Get-ChildItem `$BusinessAssets -File -Recurse | Select-Object -First 1)) { Compress-Archive -Path `$BusinessAssets -DestinationPath (Join-Path `$BackupDir "business-assets_`$stamp.zip") -Force }
 Get-ChildItem `$BackupDir -File | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item -Force
 "@ | Set-Content $script -Encoding UTF8
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$script`""

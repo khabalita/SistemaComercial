@@ -86,6 +86,8 @@ header.sidebar {
     flex-direction: column;
 }
 header h1 { font-size: 1.2rem; margin: 0; }
+.sidebar-brand a { display: block; }
+.sidebar-brand img { display: block; max-height: 82px; max-width: 180px; object-fit: contain; }
 nav { display: flex; flex-direction: column; gap: 4px; margin-top: 28px; }
 nav a { color: var(--sidebar-text); text-decoration: none; margin: 0; padding: 10px 12px; border-radius: 6px; }
 nav a:hover, nav a.active { background: var(--sidebar-active); color: white; text-decoration: none; }
@@ -264,6 +266,12 @@ nav a.active { font-weight: 600; text-decoration: underline; }
 .detail-field-value.empty { color: var(--text-muted); font-weight: 400; }
 .product-image-card { align-items: center; display: flex; flex-direction: column; gap: 12px; }
 .product-image { border: 1px solid var(--border); border-radius: 8px; display: block; max-height: 360px; max-width: 100%; object-fit: contain; width: 520px; }
+.business-logo-preview { align-items: center; background: var(--surface-muted); border: 1px solid var(--border); border-radius: 8px; display: flex; justify-content: center; margin: 16px 0; min-height: 120px; padding: 16px; }
+.business-logo-preview img { max-height: 180px; max-width: min(100%, 420px); object-fit: contain; }
+.business-logo-remove { margin-top: 16px; }
+.sale-detail-logo { max-height: 64px; max-width: 160px; object-fit: contain; }
+.print-brand { align-items: center; display: flex; gap: 14px; padding: 14px 16px; }
+.print-brand-logo { max-height: 64px; max-width: 110px; object-fit: contain; }
 .image-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .stock-form { align-items: flex-end; display: flex; gap: 8px; }
 .stock-current { min-width: 120px; }

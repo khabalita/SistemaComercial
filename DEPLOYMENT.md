@@ -71,6 +71,7 @@ http://localhost:8081/login
 
 - Base de datos MySQL.
 - `data/product-images`.
+- `data/business-assets` (logo del negocio).
 - Variables de entorno o configuracion de inicio.
 
 ## Prueba final
