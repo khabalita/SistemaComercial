@@ -48,6 +48,8 @@ El script descarga MySQL 8.4.11 desde el sitio oficial. Si cambia la URL, puede 
 5. Ingresar con usuario `admin` y la contraseña elegida.
 6. Crear un usuario operativo y cambiar la contraseña inicial si corresponde.
 
+El acceso directo espera hasta 120 segundos a que responda la pantalla de inicio de sesión antes de abrir el navegador. Si el arranque falla, muestra el error y guarda los registros en `logs` dentro de la carpeta de instalación.
+
 La instalación no utiliza datos de MySQL anteriores. Hibernate crea el esquema nuevo al iniciar la aplicación.
 
 ## Backups

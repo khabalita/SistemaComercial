@@ -27,6 +27,7 @@ Source: "payload\setup.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\backup.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\uninstall.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\start-sistema.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "payload\start-sistema.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"

@@ -28,6 +28,7 @@ Copy-Item (Join-Path $InstallerDir "setup.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "backup.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "uninstall.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "start-sistema.bat") $PayloadDir
+Copy-Item (Join-Path $InstallerDir "start-sistema.ps1") $PayloadDir
 
 $VcRedist = Join-Path $PayloadDir "vcredist_x64.exe"
 if (-not $SkipDownloads -and -not (Test-Path $VcRedist)) {
