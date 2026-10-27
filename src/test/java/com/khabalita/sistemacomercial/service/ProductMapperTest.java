@@ -6,6 +6,7 @@ import com.khabalita.sistemacomercial.Entities.Coin;
 import com.khabalita.sistemacomercial.Entities.IvaType;
 import com.khabalita.sistemacomercial.Entities.Product;
 import com.khabalita.sistemacomercial.Entities.Provider;
+import com.khabalita.sistemacomercial.dto.request.ProductRequestDto;
 import com.khabalita.sistemacomercial.dto.response.ProductResponseDto;
 import com.khabalita.sistemacomercial.mapper.ProductMapper;
 import com.khabalita.sistemacomercial.Repositories.BrandRepository;
@@ -19,6 +20,9 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
 
 class ProductMapperTest {
 
@@ -64,6 +68,54 @@ class ProductMapperTest {
     @Test
     void calculateSalePrice_nullMargin_returnsNull() {
         assertNull(mapper.calculateSalePrice(BigDecimal.TEN, null, BigDecimal.ZERO));
+    }
+
+    @Test
+    void toEntity_withoutSalePrice_calculatesFromCostMarginAndIva() {
+        IvaType iva = IvaType.builder().description("IVA 21%").percentage(new BigDecimal("21.00")).build();
+        when(ivaRepo.findById(1L)).thenReturn(Optional.of(iva));
+        when(coinRepo.findById(1L)).thenReturn(Optional.of(Coin.builder().code("ARS").build()));
+        when(provRepo.findById(1L)).thenReturn(Optional.of(Provider.builder().name("Proveedor").build()));
+
+        var dto = ProductRequestDto.builder()
+                .name("Producto")
+                .internalCode("P-001")
+                .coinId(1L)
+                .cost(new BigDecimal("100.00"))
+                .margin(new BigDecimal("20.00"))
+                .salePrice(null)
+                .stock(0)
+                .ivaTypeId(1L)
+                .providerId(1L)
+                .build();
+
+        Product product = mapper.toEntity(dto);
+
+        assertEquals(0, new BigDecimal("145.20").compareTo(product.getSalePrice()));
+    }
+
+    @Test
+    void toEntity_keepsManuallyEnteredSalePrice() {
+        IvaType iva = IvaType.builder().description("IVA 21%").percentage(new BigDecimal("21.00")).build();
+        when(ivaRepo.findById(1L)).thenReturn(Optional.of(iva));
+        when(coinRepo.findById(1L)).thenReturn(Optional.of(Coin.builder().code("ARS").build()));
+        when(provRepo.findById(1L)).thenReturn(Optional.of(Provider.builder().name("Proveedor").build()));
+
+        var dto = ProductRequestDto.builder()
+                .name("Producto")
+                .internalCode("P-002")
+                .coinId(1L)
+                .cost(new BigDecimal("100.00"))
+                .margin(new BigDecimal("20.00"))
+                .salePrice(new BigDecimal("130.00"))
+                .stock(0)
+                .ivaTypeId(1L)
+                .providerId(1L)
+                .build();
+
+        Product product = mapper.toEntity(dto);
+
+        assertEquals(0, new BigDecimal("130.00").compareTo(product.getSalePrice()));
     }
 
     @Test

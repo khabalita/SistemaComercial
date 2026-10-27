@@ -316,7 +316,6 @@ public class ProductViewController {
                 .stock(0)
                 .margin(BigDecimal.ZERO)
                 .cost(BigDecimal.ZERO)
-                .salePrice(BigDecimal.ZERO)
                 .build();
     }
 

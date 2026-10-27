@@ -212,7 +212,7 @@ input, select {
     width: 100%;
 }
 .product-result:last-child { border-bottom: 0; }
-.product-result:hover, .product-result:focus { background: var(--surface-muted); color: var(--text); outline: 0; }
+.product-result:hover, .product-result:focus, .product-result.active { background: var(--surface-muted); color: var(--text); outline: 0; }
 .product-result-empty { color: var(--text-muted); font-size: 0.85rem; padding: 10px 12px; }
 .sale-totals { display: flex; flex-direction: column; gap: 8px; margin: 20px 0 0 auto; max-width: 320px; }
 .sale-totals > div { align-items: center; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; padding: 6px 0; }
