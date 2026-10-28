@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Sistema Comercial
+Comment=Gestión local del comercio
+Exec=/usr/bin/sistemacomercial
+Terminal=false
+Categories=Office;

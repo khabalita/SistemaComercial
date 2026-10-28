@@ -1,0 +1,6 @@
+Template: sistemacomercial/admin-password
+Type: password
+Description: Contraseña inicial del administrador
+ Definí la contraseña inicial para el usuario admin del Sistema Comercial.
+ Debe tener al menos 8 caracteres. El sistema la usará para crear la cuenta
+ la primera vez que se inicie.

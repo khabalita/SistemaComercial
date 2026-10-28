@@ -1,0 +1,10 @@
+Package: sistemacomercial
+Version: @VERSION@
+Section: misc
+Priority: optional
+Architecture: amd64
+Maintainer: Sistema Comercial
+Depends: adduser, curl, debconf (>= 0.5), mysql-server, openssl, systemd, xdg-utils
+Description: Sistema Comercial
+ Aplicación local de gestión comercial para productos, inventario, clientes,
+ proveedores y ventas.

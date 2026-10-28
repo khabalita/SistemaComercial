@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+APP_DATA="/var/lib/sistemacomercial"
+BACKUP_DIR="/var/backups/sistemacomercial"
+STAMP="$(date +%Y-%m-%d_%H-%M-%S)"
+
+install -d -o root -g root -m 0700 "$BACKUP_DIR"
+mysqldump --protocol=socket --user=root --single-transaction sistemacomercial \
+    | gzip > "$BACKUP_DIR/sistemacomercial_$STAMP.sql.gz"
+tar -czf "$BACKUP_DIR/archivos_$STAMP.tar.gz" \
+    -C "$APP_DATA" product-images business-assets
+find "$BACKUP_DIR" -type f -mtime +30 -delete

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+URL="http://localhost:8081/login"
+
+for _ in $(seq 1 120); do
+    if curl --fail --silent --show-error --max-time 2 "$URL" >/dev/null 2>&1; then
+        xdg-open "$URL" >/dev/null 2>&1 &
+        exit 0
+    fi
+    sleep 1
+done
+
+MESSAGE="Sistema Comercial no respondió en 120 segundos. Revisá el servicio con: systemctl status sistemacomercial"
+if command -v zenity >/dev/null 2>&1; then
+    zenity --error --title="Sistema Comercial" --text="$MESSAGE" 2>/dev/null || true
+elif command -v notify-send >/dev/null 2>&1; then
+    notify-send "Sistema Comercial" "$MESSAGE" 2>/dev/null || true
+else
+    logger -t sistemacomercial "$MESSAGE"
+fi
+exit 1

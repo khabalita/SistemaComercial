@@ -1,0 +1,10 @@
+[Unit]
+Description=Respaldo diario de Sistema Comercial
+
+[Timer]
+OnCalendar=*-*-* 23:00:00
+Persistent=true
+Unit=sistemacomercial-backup.service
+
+[Install]
+WantedBy=timers.target

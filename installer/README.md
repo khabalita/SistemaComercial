@@ -1,5 +1,7 @@
 # Instalador de Windows
 
+Para Ubuntu/Linux Mint, el instalador `.deb` y sus instrucciones están en [`linux/README.md`](linux/README.md). El workflow Linux publica ese paquete como artefacto independiente del instalador Windows.
+
 Este instalador prepara una PC Windows nueva con:
 
 - Java 21 portable.

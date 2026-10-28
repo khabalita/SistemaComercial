@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+. /usr/share/debconf/confmodule
+db_input critical sistemacomercial/admin-password || true
+db_go || true
+
+exit 0

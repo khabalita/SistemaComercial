@@ -1,0 +1,38 @@
+name: Generar instalador Linux
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Compilar y probar aplicación
+        run: ./mvnw -B clean test package
+
+      - name: Construir paquete Debian
+        run: bash ./installer/linux/build-deb.sh
+
+      - name: Publicar paquete
+        uses: actions/upload-artifact@v4
+        with:
+          name: SistemaComercial-Linux-Ubuntu-Mint
+          path: target/distributions/*.deb
+          if-no-files-found: error

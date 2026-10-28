@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+case "${1:-}" in
+    remove|deconfigure)
+        systemctl disable --now sistemacomercial.service >/dev/null 2>&1 || true
+        systemctl disable --now sistemacomercial-backup.timer >/dev/null 2>&1 || true
+        ;;
+esac
+
+exit 0

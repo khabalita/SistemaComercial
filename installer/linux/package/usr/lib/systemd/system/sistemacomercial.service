@@ -1,0 +1,23 @@
+[Unit]
+Description=Sistema Comercial
+Wants=network-online.target
+After=network-online.target mysql.service
+Requires=mysql.service
+
+[Service]
+Type=simple
+User=sistemacomercial
+Group=sistemacomercial
+WorkingDirectory=/var/lib/sistemacomercial
+ExecStart=/opt/sistemacomercial/java/bin/java -jar /opt/sistemacomercial/app/sistemacomercial.jar --spring.config.location=file:/etc/sistemacomercial/application.properties
+Restart=on-failure
+RestartSec=5
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/sistemacomercial
+
+[Install]
+WantedBy=multi-user.target
