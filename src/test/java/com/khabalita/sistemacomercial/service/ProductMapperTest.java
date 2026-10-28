@@ -180,6 +180,28 @@ class ProductMapperTest {
     }
 
     @Test
+    void toDto_usdProductIncludesArsDisplayEquivalent() {
+        Coin usd = Coin.builder().code("USD").presentValue(new BigDecimal("1250.00")).build();
+        IvaType iva = IvaType.builder().description("Exento").percentage(BigDecimal.ZERO).build();
+        Product product = Product.builder()
+                .name("Producto USD")
+                .internalCode("USD-001")
+                .coin(usd)
+                .ivaType(iva)
+                .cost(new BigDecimal("10.00"))
+                .discountedCost(new BigDecimal("10.00"))
+                .providerDiscountPercentageApplied(BigDecimal.ZERO)
+                .margin(BigDecimal.ZERO)
+                .salePrice(new BigDecimal("12.50"))
+                .stock(1)
+                .build();
+
+        ProductResponseDto dto = mapper.toDto(product);
+
+        assertEquals(0, new BigDecimal("15625.00").compareTo(dto.salePriceArsEquivalent()));
+    }
+
+    @Test
     void toDto_nullEntity_returnsNull() {
         assertNull(mapper.toDto(null));
     }

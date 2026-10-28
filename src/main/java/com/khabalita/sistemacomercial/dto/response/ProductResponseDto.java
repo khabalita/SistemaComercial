@@ -19,6 +19,7 @@ public record ProductResponseDto(
         BigDecimal discountedCost,
         BigDecimal margin,
         BigDecimal salePrice,
+        BigDecimal salePriceArsEquivalent,
         Integer stock,
         Integer minStock,
         Long ivaTypeId,

@@ -102,6 +102,16 @@ class WebAuthorizationTest {
     }
 
     @Test
+    void admin_canUpdateUsdRateFromProductList() throws Exception {
+        mockMvc.perform(post("/ui/products/usd-rate")
+                        .param("usdRate", "1250.50")
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin-test").roles("ADMIN"))
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/ui/products"));
+    }
+
+    @Test
     void admin_canOpenNewProviderFormWithDiscountField() throws Exception {
         mockMvc.perform(get("/ui/providers/new")
                         .with(SecurityMockMvcRequestPostProcessors.user("admin-test").roles("ADMIN")))

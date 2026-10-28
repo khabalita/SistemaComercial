@@ -226,6 +226,13 @@ input, select {
 .stock-status.danger, .stock-status.low { background: var(--low-bg); color: var(--low-text); }
 .stock-status.available { background: var(--success-bg); color: var(--success-text); }
 .stock-detail { display: flex; flex-direction: column; gap: 4px; }
+.usd-rate-panel { align-items: center; background: var(--surface-muted); border: 1px solid var(--border); border-radius: 8px; display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; margin: 10px 0; padding: 8px 12px; }
+.usd-rate-current { align-items: baseline; display: flex; flex-wrap: wrap; gap: 8px; }
+.usd-rate-current > span { color: var(--text-muted); font-size: 0.85rem; }
+.usd-rate-form { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
+.usd-rate-form input { width: 125px; }
+.product-price { display: flex; flex-direction: column; gap: 3px; }
+.product-price small { color: var(--text-muted); font-size: 0.75rem; }
 .flash { padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-size: 0.9rem; }
 .flash-ok { background: var(--success-bg); color: var(--success-text); border-left: 4px solid var(--success-border); }
 .flash-err { background: var(--error-bg); color: var(--error-text); border-left: 4px solid var(--danger); }

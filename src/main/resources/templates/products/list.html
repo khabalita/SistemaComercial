@@ -20,6 +20,20 @@
             </div>
         </div>
 
+        <section class="usd-rate-panel" aria-label="Cotización del dólar">
+            <div class="usd-rate-current">
+                <span>Cotización dólar</span>
+                <strong th:text="|1 USD = ARS ${usdRate}|">1 USD = ARS 1000.00</strong>
+            </div>
+            <form th:if="${isAdmin}" th:action="@{/ui/products/usd-rate}" method="post" class="usd-rate-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <label class="sr-only" for="usdRate">Nueva cotización en pesos por dólar</label>
+                <input id="usdRate" type="number" name="usdRate" min="0.01" max="999999.99"
+                       step="0.01" th:value="${usdRate}" aria-label="ARS por 1 USD" required>
+                <button type="submit" class="button secondary">Actualizar</button>
+            </form>
+        </section>
+
         <form class="filters" method="get" th:action="@{/ui/products}">
             <input type="text" name="name" placeholder="Buscar por nombre" th:value="${param.name}">
             <input type="text" name="category" placeholder="Categoria" th:value="${param.category}">
@@ -63,7 +77,11 @@
                     </div>
                 </td>
                 <td>
-                    <span th:text="${p.coinCode} + ' ' + ${p.salePrice}"></span>
+                    <div class="product-price">
+                        <strong th:text="${p.coinCode} + ' ' + ${p.salePrice}"></strong>
+                        <small th:if="${p.coinCode == 'USD' and p.salePriceArsEquivalent != null}"
+                               th:text="|Equivalente: ARS ${p.salePriceArsEquivalent}|"></small>
+                    </div>
                 </td>
                 <td>
                     <a th:href="@{|/ui/products/${p.id}|}" class="icon-button view" title="Ver producto" aria-label="Ver producto">

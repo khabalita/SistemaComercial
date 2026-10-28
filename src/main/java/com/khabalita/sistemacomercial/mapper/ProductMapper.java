@@ -29,6 +29,11 @@ public class ProductMapper {
         BigDecimal automaticSalePrice = calculateSalePrice(discountedCost, entity.getMargin(),
                 entity.getIvaType() != null ? entity.getIvaType().getPercentage() : null);
         BigDecimal salePrice = entity.getSalePrice() != null ? entity.getSalePrice() : automaticSalePrice;
+        BigDecimal salePriceArsEquivalent = entity.getCoin() != null
+                && "USD".equalsIgnoreCase(entity.getCoin().getCode())
+                && entity.getCoin().getPresentValue() != null && salePrice != null
+                ? salePrice.multiply(entity.getCoin().getPresentValue()).setScale(2, RoundingMode.HALF_UP)
+                : null;
         return ProductResponseDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
@@ -43,6 +48,7 @@ public class ProductMapper {
                 .discountedCost(discountedCost)
                 .margin(entity.getMargin())
                 .salePrice(salePrice)
+                .salePriceArsEquivalent(salePriceArsEquivalent)
                 .stock(entity.getStock())
                 .minStock(entity.getMinStock())
                 .ivaTypeId(entity.getIvaType() != null ? entity.getIvaType().getId() : null)

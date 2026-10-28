@@ -63,4 +63,26 @@ class CoinServiceImplTest {
 
         assertEquals("USD", service.getCoinByCode("usd").code());
     }
+
+    @Test
+    void updatePresentValue_updatesAndRoundsRate() {
+        Coin usd = Coin.builder().code("USD").presentValue(new BigDecimal("1000.0000")).build();
+        when(coinRepository.findByCodeIgnoreCase("USD")).thenReturn(usd);
+        when(coinRepository.save(usd)).thenReturn(usd);
+        when(coinMapper.toDto(usd)).thenReturn(CoinResponseDto.builder()
+                .code("USD").presentValue(new BigDecimal("1250.13")).build());
+
+        CoinResponseDto updated = service.updatePresentValue("USD", new BigDecimal("1250.126"));
+
+        assertEquals(0, new BigDecimal("1250.13").compareTo(usd.getPresentValue()));
+        assertEquals(0, new BigDecimal("1250.13").compareTo(updated.presentValue()));
+        verify(coinRepository).save(usd);
+    }
+
+    @Test
+    void updatePresentValue_rejectsNonPositiveRate() {
+        assertThrows(IllegalArgumentException.class,
+                () -> service.updatePresentValue("USD", BigDecimal.ZERO));
+        verifyNoInteractions(coinRepository);
+    }
 }

@@ -70,7 +70,22 @@ public class ProductViewController {
         model.addAttribute("category", category);
         model.addAttribute("brand", brand);
         model.addAttribute("provider", provider);
+        var usdCoin = coinService.getCoinByCode("USD");
+        model.addAttribute("usdRate", usdCoin == null || usdCoin.presentValue() == null
+                ? null : usdCoin.presentValue().setScale(2, java.math.RoundingMode.HALF_UP));
         return "products/list";
+    }
+
+    @PostMapping("/usd-rate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String updateUsdRate(@RequestParam BigDecimal usdRate, RedirectAttributes redirectAttributes) {
+        try {
+            coinService.updatePresentValue("USD", usdRate);
+            redirectAttributes.addFlashAttribute("ok", "Cotización del dólar actualizada.");
+        } catch (Exception exception) {
+            redirectAttributes.addFlashAttribute("error", exception.getMessage());
+        }
+        return "redirect:/ui/products";
     }
 
     @GetMapping("/new")

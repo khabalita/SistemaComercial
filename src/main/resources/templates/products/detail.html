@@ -63,7 +63,12 @@
                 <div class="detail-field"><label>Descuento del proveedor</label><div class="detail-field-value" th:text="${product.providerDiscountPercentageApplied + ' %'}"></div></div>
                 <div class="detail-field"><label>Costo final</label><div class="detail-field-value" th:text="${product.coinCode + ' ' + product.discountedCost}"></div></div>
                 <div class="detail-field"><label>Margen</label><div class="detail-field-value" th:text="${product.margin + ' %'}"></div></div>
-                <div class="detail-field"><label>Precio de venta</label><div class="detail-field-value" th:text="${product.coinCode + ' ' + product.salePrice}"></div></div>
+                <div class="detail-field">
+                    <label>Precio de venta</label>
+                    <div class="detail-field-value" th:text="${product.coinCode + ' ' + product.salePrice}"></div>
+                    <small th:if="${product.coinCode == 'USD' and product.salePriceArsEquivalent != null}"
+                           th:text="|Equivalente: ARS ${product.salePriceArsEquivalent}|"></small>
+                </div>
             </div>
         </section>
 
