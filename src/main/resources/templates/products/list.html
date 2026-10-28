@@ -53,8 +53,14 @@
                 <td th:text="${p.brandName} ?: '-'"></td>
                 <td th:text="${p.providerName}"></td>
                 <td>
-                    <span th:text="${p.stock}"
-                          th:classappend="${p.minStock != null and p.stock < p.minStock} ? 'tag low' : 'tag'"></span>
+                    <div class="stock-indicator">
+                        <strong th:text="${p.stock} + ' unidades'"></strong>
+                        <span th:if="${p.stock <= 0}" class="stock-status danger">Sin stock</span>
+                        <span th:if="${p.stock > 0 and p.minStock != null and p.stock <= p.minStock}"
+                              class="stock-status low">Stock bajo</span>
+                        <span th:if="${p.stock > 0 and (p.minStock == null or p.stock > p.minStock)}"
+                              class="stock-status available">Disponible</span>
+                    </div>
                 </td>
                 <td>
                     <span th:text="${p.coinCode} + ' ' + ${p.salePrice}"></span>

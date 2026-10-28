@@ -40,6 +40,12 @@ public class Product extends AuditableEntity {
     @Column(name = "cost", nullable = false, precision = 12, scale = 2)
     private BigDecimal cost;
 
+    @Column(name = "provider_discount_percentage", precision = 5, scale = 2)
+    private BigDecimal providerDiscountPercentageApplied;
+
+    @Column(name = "discounted_cost", precision = 12, scale = 2)
+    private BigDecimal discountedCost;
+
     @Column(name = "margin", precision = 6, scale = 2, nullable = false)
     private BigDecimal margin;
 

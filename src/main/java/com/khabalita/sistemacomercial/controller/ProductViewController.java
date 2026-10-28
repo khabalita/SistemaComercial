@@ -79,6 +79,7 @@ public class ProductViewController {
         model.addAttribute("product", emptyProduct());
         model.addAttribute("isEdit", false);
         model.addAttribute("productId", null);
+        model.addAttribute("providerDiscountSnapshot", BigDecimal.ZERO);
         addLookups(model);
         return "products/form";
     }
@@ -153,6 +154,8 @@ public class ProductViewController {
         if (binding.hasErrors()) {
             model.addAttribute("product", dto);
             model.addAttribute("isEdit", false);
+            model.addAttribute("providerDiscountSnapshot", dto.providerDiscountPercentageApplied() == null
+                    ? BigDecimal.ZERO : dto.providerDiscountPercentageApplied());
             model.addAttribute("errorMessage", "Revisa los datos ingresados.");
             model.addAttribute("fieldErrors", binding.getFieldErrors().stream()
                     .map(fe -> fe.getField() + ": " + fe.getDefaultMessage()).toList());
@@ -166,6 +169,8 @@ public class ProductViewController {
         } catch (Exception e) {
             model.addAttribute("product", dto);
             model.addAttribute("isEdit", false);
+            model.addAttribute("providerDiscountSnapshot", dto.providerDiscountPercentageApplied() == null
+                    ? BigDecimal.ZERO : dto.providerDiscountPercentageApplied());
             model.addAttribute("errorMessage", e.getMessage());
             addLookups(model);
             return "products/form";
@@ -226,6 +231,8 @@ public class ProductViewController {
             model.addAttribute("product", toRequestDto(p));
             model.addAttribute("isEdit", true);
             model.addAttribute("productId", id);
+            model.addAttribute("providerDiscountSnapshot", p.providerDiscountPercentageApplied() == null
+                    ? BigDecimal.ZERO : p.providerDiscountPercentageApplied());
             addLookups(model);
             return "products/form";
         } catch (Exception e) {
@@ -242,6 +249,8 @@ public class ProductViewController {
             model.addAttribute("product", dto);
             model.addAttribute("isEdit", true);
             model.addAttribute("productId", id);
+            model.addAttribute("providerDiscountSnapshot", dto.providerDiscountPercentageApplied() == null
+                    ? BigDecimal.ZERO : dto.providerDiscountPercentageApplied());
             model.addAttribute("errorMessage", "Revisa los datos ingresados.");
             model.addAttribute("fieldErrors", binding.getFieldErrors().stream()
                     .map(fe -> fe.getField() + ": " + fe.getDefaultMessage()).toList());
@@ -256,6 +265,8 @@ public class ProductViewController {
             model.addAttribute("product", dto);
             model.addAttribute("isEdit", true);
             model.addAttribute("productId", id);
+            model.addAttribute("providerDiscountSnapshot", dto.providerDiscountPercentageApplied() == null
+                    ? BigDecimal.ZERO : dto.providerDiscountPercentageApplied());
             model.addAttribute("errorMessage", e.getMessage());
             addLookups(model);
             return "products/form";
@@ -316,6 +327,9 @@ public class ProductViewController {
                 .stock(0)
                 .margin(BigDecimal.ZERO)
                 .cost(BigDecimal.ZERO)
+                .discountedCost(BigDecimal.ZERO)
+                .providerDiscountPercentageApplied(BigDecimal.ZERO)
+                .salePriceManualOverride(false)
                 .build();
     }
 
@@ -331,8 +345,11 @@ public class ProductViewController {
                 .brandId(p.brandId())
                 .providerId(p.providerId())
                 .cost(p.cost())
+                .discountedCost(p.discountedCost())
+                .providerDiscountPercentageApplied(p.providerDiscountPercentageApplied())
                 .margin(p.margin())
                 .salePrice(p.salePrice())
+                .salePriceManualOverride(p.salePriceManualOverride())
                 .stock(p.stock())
                 .minStock(p.minStock())
                 .build();

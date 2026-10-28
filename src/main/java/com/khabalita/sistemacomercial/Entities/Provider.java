@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,11 @@ public class Provider extends AuditableEntity {
     @Column(name = "website", length = 150)
     private String website;
 
+    @Column(name = "discount_percentage", precision = 5, scale = 2)
+    @Builder.Default
+    private BigDecimal discountPercentage = BigDecimal.ZERO;
+
     @OneToMany(mappedBy = "provider", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<ProviderDiscount> discounts = new ArrayList<>();
 }

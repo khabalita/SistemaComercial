@@ -28,6 +28,10 @@ public record ProductRequestDto(
         @DecimalMin(value = "0.0", inclusive = false, message = "El costo debe ser mayor a 0")
         BigDecimal cost,
 
+        BigDecimal discountedCost,
+
+        BigDecimal providerDiscountPercentageApplied,
+
         @NotNull(message = "El margen es obligatorio")
         @DecimalMin(value = "0.0", message = "El margen no puede ser negativo")
         BigDecimal margin,
@@ -50,5 +54,7 @@ public record ProductRequestDto(
         Long brandId,
 
         @NotNull(message = "El proveedor es obligatorio")
-        Long providerId)
+        Long providerId,
+
+        boolean salePriceManualOverride)
 { }

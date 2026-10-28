@@ -43,6 +43,12 @@
                     <label>Sitio web</label>
                     <input type="text" name="website" th:value="${provider.website}" maxlength="150">
                 </div>
+                <div>
+                    <label>Descuento sobre costo (%)</label>
+                    <input type="number" name="discountPercentage" min="0" max="99.99" step="0.01"
+                           th:value="${provider.discountPercentage != null ? provider.discountPercentage : 0}" required>
+                    <small>Se aplica al costo informado en la factura. Usar 0 si no corresponde.</small>
+                </div>
                 <div class="full">
                     <label>Dirección</label>
                     <input type="text" name="address" th:value="${provider.address}" maxlength="200">

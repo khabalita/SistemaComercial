@@ -20,6 +20,7 @@ public class ProviderMapper {
                 .phone(entity.getPhone())
                 .email(entity.getEmail())
                 .website(entity.getWebsite())
+                .discountPercentage(entity.getDiscountPercentage() == null ? java.math.BigDecimal.ZERO : entity.getDiscountPercentage())
                 .build();
     }
 
@@ -32,6 +33,8 @@ public class ProviderMapper {
         entity.setPhone(providerRequestDto.phone());
         entity.setEmail(providerRequestDto.email());
         entity.setWebsite(providerRequestDto.website());
+        entity.setDiscountPercentage(providerRequestDto.discountPercentage() == null
+                ? java.math.BigDecimal.ZERO : providerRequestDto.discountPercentage());
         return entity;
     }
 

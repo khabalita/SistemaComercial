@@ -3,6 +3,8 @@ package com.khabalita.sistemacomercial.dto.request;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
+import java.math.BigDecimal;
+
 @Builder
 public record ProviderRequestDto(
 
@@ -24,5 +26,9 @@ public record ProviderRequestDto(
         String email,
 
         @Size(max = 150, message = "El sitio web no puede superar los 150 caracteres")
-        String website)
+        String website,
+
+        @DecimalMin(value = "0.0", message = "El descuento no puede ser negativo")
+        @DecimalMax(value = "99.99", message = "El descuento debe ser menor a 100%")
+        BigDecimal discountPercentage)
 { }

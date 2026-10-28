@@ -77,6 +77,8 @@ public class ProviderServiceImpl implements IProviderService {
         existing.setPhone(providerRequestDto.phone());
         existing.setEmail(providerRequestDto.email());
         existing.setWebsite(providerRequestDto.website());
+        existing.setDiscountPercentage(providerRequestDto.discountPercentage() == null
+                ? java.math.BigDecimal.ZERO : providerRequestDto.discountPercentage());
         return providerMapper.toDto(providerRepository.save(existing));
     }
 

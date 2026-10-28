@@ -15,6 +15,8 @@ public record ProductResponseDto(
         Long coinId,
         String coinCode,
         BigDecimal cost,
+        BigDecimal providerDiscountPercentageApplied,
+        BigDecimal discountedCost,
         BigDecimal margin,
         BigDecimal salePrice,
         Integer stock,
@@ -27,5 +29,6 @@ public record ProductResponseDto(
         String brandName,
         Long providerId,
         String providerName,
+        boolean salePriceManualOverride,
         boolean hasImage)
 { }

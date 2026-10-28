@@ -136,6 +136,8 @@ public class ProductServiceImpl implements IProductService {
         existing.setProviderCode(updated.getProviderCode());
         existing.setCoin(updated.getCoin());
         existing.setCost(updated.getCost());
+        existing.setProviderDiscountPercentageApplied(updated.getProviderDiscountPercentageApplied());
+        existing.setDiscountedCost(updated.getDiscountedCost());
         existing.setMargin(updated.getMargin());
         existing.setSalePrice(updated.getSalePrice());
         existing.setStock(updated.getStock());

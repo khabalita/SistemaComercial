@@ -86,6 +86,30 @@ class WebAuthorizationTest {
     }
 
     @Test
+    void admin_canOpenNewProductFormWithPricingFields() throws Exception {
+        mockMvc.perform(get("/ui/products/new")
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin-test").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("products/form"));
+    }
+
+    @Test
+    void admin_canViewProductList() throws Exception {
+        mockMvc.perform(get("/ui/products")
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin-test").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("products/list"));
+    }
+
+    @Test
+    void admin_canOpenNewProviderFormWithDiscountField() throws Exception {
+        mockMvc.perform(get("/ui/providers/new")
+                        .with(SecurityMockMvcRequestPostProcessors.user("admin-test").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("providers/form"));
+    }
+
+    @Test
     void loginPage_isRendered() throws Exception {
         mockMvc.perform(get("/login"))
                 .andExpect(status().isOk())

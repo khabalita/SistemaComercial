@@ -2,6 +2,8 @@ package com.khabalita.sistemacomercial.dto.response;
 
 import lombok.Builder;
 
+import java.math.BigDecimal;
+
 @Builder
 public record ProviderResponseDto(
         Long id,
@@ -10,5 +12,6 @@ public record ProviderResponseDto(
         String address,
         String phone,
         String email,
-        String website)
+        String website,
+        BigDecimal discountPercentage)
 { }

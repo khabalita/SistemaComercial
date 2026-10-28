@@ -108,6 +108,24 @@ class ProductImportServiceTest {
         assertEquals("A-001", captor.getValue().get(0).getInternalCode());
     }
 
+    @Test
+    void import_appliesProviderDiscountToInvoiceCost() {
+        provider.setDiscountPercentage(new BigDecimal("10.00"));
+        ProductImportResult result = service.importProducts(file(
+                String.join(",", ProductImportService.HEADERS) + "\n"
+                        + "Producto,A-002,,,1000,,10,2,,,Proveedor\n"));
+
+        assertTrue(result.valid(), result.errors().toString());
+        ArgumentCaptor<java.util.List<com.khabalita.sistemacomercial.Entities.Product>> captor =
+                ArgumentCaptor.forClass(java.util.List.class);
+        verify(productRepository).saveAll(captor.capture());
+        com.khabalita.sistemacomercial.Entities.Product product = captor.getValue().get(0);
+        assertEquals(0, new BigDecimal("1000.00").compareTo(product.getCost()));
+        assertEquals(0, new BigDecimal("10.00").compareTo(product.getProviderDiscountPercentageApplied()));
+        assertEquals(0, new BigDecimal("900.00").compareTo(product.getDiscountedCost()));
+        assertEquals(0, new BigDecimal("900.00").compareTo(product.getSalePrice()));
+    }
+
     private MockMultipartFile file(String content) {
         return new MockMultipartFile("file", "products.csv", "text/csv", content.getBytes());
     }

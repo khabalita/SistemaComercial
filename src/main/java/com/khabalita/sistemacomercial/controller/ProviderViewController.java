@@ -18,6 +18,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import java.math.BigDecimal;
+
 @Controller
 @RequestMapping("/ui/providers")
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class ProviderViewController {
     @GetMapping("/new")
     @PreAuthorize("hasRole('ADMIN')")
     public String newForm(Model model) {
-        model.addAttribute("provider", ProviderRequestDto.builder().build());
+        model.addAttribute("provider", ProviderRequestDto.builder().discountPercentage(BigDecimal.ZERO).build());
         model.addAttribute("isEdit", false);
         model.addAttribute("itemId", null);
         return "providers/form";
@@ -131,6 +133,7 @@ public class ProviderViewController {
                 .phone(p.phone())
                 .website(p.website())
                 .address(p.address())
+                .discountPercentage(p.discountPercentage())
                 .build();
     }
 

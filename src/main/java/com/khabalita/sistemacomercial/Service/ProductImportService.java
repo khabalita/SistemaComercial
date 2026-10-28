@@ -33,6 +33,7 @@ import java.io.Reader;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -240,15 +241,22 @@ public class ProductImportService {
     }
 
     private Product toEntity(ProductImportRow row) {
+        Provider provider = provider(row);
+        BigDecimal discountPercentage = provider == null || provider.getDiscountPercentage() == null
+                ? BigDecimal.ZERO : provider.getDiscountPercentage();
+        BigDecimal discountMultiplier = BigDecimal.ONE.subtract(
+                discountPercentage.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+        BigDecimal discountedCost = row.cost().multiply(discountMultiplier).setScale(2, RoundingMode.HALF_UP);
         Product product = Product.builder().name(row.name()).internalCode(row.internalCode())
                 .barCode(row.barCode()).providerCode(row.providerCode()).cost(row.cost()).margin(DEFAULT_MARGIN)
-                .salePrice(row.salePrice() == null ? row.cost() : row.salePrice())
+                .providerDiscountPercentageApplied(discountPercentage).discountedCost(discountedCost)
+                .salePrice(row.salePrice() == null ? discountedCost : row.salePrice())
                 .stock(row.stock()).minStock(row.minStock())
                 .coin(coinRepository.findByCodeIgnoreCase("ARS"))
                 .ivaType(ivaTypeRepository.findByDescriptionIgnoreCase(DEFAULT_IVA))
                 .category(blank(row.categoryName()) ? null : categoryRepository.findByNameIgnoreCase(row.categoryName()))
                 .brand(blank(row.brandName()) ? null : brandRepository.findByNameIgnoreCase(row.brandName()))
-                .provider(provider(row)).build();
+                .provider(provider).build();
         return product;
     }
 

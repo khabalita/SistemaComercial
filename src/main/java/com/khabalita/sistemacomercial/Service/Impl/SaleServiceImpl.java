@@ -151,8 +151,9 @@ public class SaleServiceImpl implements ISaleService {
 
             BigDecimal unitPrice = product.getSalePrice() != null
                     ? product.getSalePrice()
-                    : productMapper.calculateSalePrice(product.getCost(), product.getMargin(),
-                    product.getIvaType().getPercentage());
+                    : productMapper.calculateSalePrice(product.getDiscountedCost() == null
+                                    ? product.getCost() : product.getDiscountedCost(), product.getMargin(),
+                            product.getIvaType().getPercentage());
 
             BigDecimal lineTotal = calculateLineTotal(
                     unitPrice, itemReq.quantity(), lineDiscount);
@@ -167,7 +168,8 @@ public class SaleServiceImpl implements ISaleService {
                      .lineTotal(lineTotal)
                      .productNameSnapshot(product.getName())
                      .productCodeSnapshot(product.getInternalCode())
-                     .costSnapshot(product.getCost())
+                     .costSnapshot(product.getDiscountedCost() == null
+                             ? product.getCost() : product.getDiscountedCost())
                      .marginSnapshot(product.getMargin())
                      .ivaPercentageSnapshot(product.getIvaType().getPercentage())
                      .build();

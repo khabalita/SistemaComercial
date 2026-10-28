@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -84,6 +85,22 @@ class ProviderServiceImplTest {
         assertEquals("Prov updated", result.name());
         assertEquals("Prov updated", existing.getName());
         assertEquals("30-12345678-9", existing.getTaxId());
+    }
+
+    @Test
+    void update_existing_updatesProviderDiscountPercentage() {
+        Provider existing = Provider.builder().name("Prov").discountPercentage(BigDecimal.ZERO).build();
+        existing.setId(1L);
+        ProviderRequestDto request = ProviderRequestDto.builder()
+                .name("Prov")
+                .discountPercentage(new BigDecimal("12.50"))
+                .build();
+        when(providerRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(providerRepository.save(existing)).thenReturn(existing);
+
+        service.updateProvider(1L, request);
+
+        assertEquals(0, new BigDecimal("12.50").compareTo(existing.getDiscountPercentage()));
     }
 
     @Test

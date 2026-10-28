@@ -111,11 +111,39 @@ class ProductMapperTest {
                 .stock(0)
                 .ivaTypeId(1L)
                 .providerId(1L)
+                .salePriceManualOverride(true)
                 .build();
 
         Product product = mapper.toEntity(dto);
 
         assertEquals(0, new BigDecimal("130.00").compareTo(product.getSalePrice()));
+    }
+
+    @Test
+    void toEntity_appliesProviderDiscountBeforeMarginAndIva() {
+        IvaType iva = IvaType.builder().description("IVA 21%").percentage(new BigDecimal("21.00")).build();
+        Provider provider = Provider.builder().name("Proveedor").discountPercentage(new BigDecimal("10.00")).build();
+        when(ivaRepo.findById(1L)).thenReturn(Optional.of(iva));
+        when(coinRepo.findById(1L)).thenReturn(Optional.of(Coin.builder().code("ARS").build()));
+        when(provRepo.findById(1L)).thenReturn(Optional.of(provider));
+
+        var dto = ProductRequestDto.builder()
+                .name("Producto con descuento")
+                .internalCode("P-003")
+                .coinId(1L)
+                .cost(new BigDecimal("100.00"))
+                .margin(new BigDecimal("20.00"))
+                .salePrice(null)
+                .stock(0)
+                .ivaTypeId(1L)
+                .providerId(1L)
+                .build();
+
+        Product product = mapper.toEntity(dto);
+
+        assertEquals(0, new BigDecimal("90.00").compareTo(product.getDiscountedCost()));
+        assertEquals(0, new BigDecimal("10.00").compareTo(product.getProviderDiscountPercentageApplied()));
+        assertEquals(0, new BigDecimal("130.68").compareTo(product.getSalePrice()));
     }
 
     @Test

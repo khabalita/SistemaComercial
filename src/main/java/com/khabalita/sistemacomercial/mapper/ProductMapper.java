@@ -24,6 +24,11 @@ public class ProductMapper {
 
     public ProductResponseDto toDto(Product entity) {
         if (entity == null) return null;
+        BigDecimal discountedCost = entity.getDiscountedCost() != null
+                ? entity.getDiscountedCost() : entity.getCost();
+        BigDecimal automaticSalePrice = calculateSalePrice(discountedCost, entity.getMargin(),
+                entity.getIvaType() != null ? entity.getIvaType().getPercentage() : null);
+        BigDecimal salePrice = entity.getSalePrice() != null ? entity.getSalePrice() : automaticSalePrice;
         return ProductResponseDto.builder()
                 .id(entity.getId())
                 .name(entity.getName())
@@ -33,9 +38,11 @@ public class ProductMapper {
                 .coinId(entity.getCoin() != null ? entity.getCoin().getId() : null)
                 .coinCode(entity.getCoin() != null ? entity.getCoin().getCode() : null)
                 .cost(entity.getCost())
+                .providerDiscountPercentageApplied(entity.getProviderDiscountPercentageApplied() == null
+                        ? BigDecimal.ZERO : entity.getProviderDiscountPercentageApplied())
+                .discountedCost(discountedCost)
                 .margin(entity.getMargin())
-                .salePrice(entity.getSalePrice() != null ? entity.getSalePrice() : calculateSalePrice(entity.getCost(), entity.getMargin(),
-                        entity.getIvaType() != null ? entity.getIvaType().getPercentage() : null))
+                .salePrice(salePrice)
                 .stock(entity.getStock())
                 .minStock(entity.getMinStock())
                 .ivaTypeId(entity.getIvaType() != null ? entity.getIvaType().getId() : null)
@@ -46,6 +53,8 @@ public class ProductMapper {
                 .brandName(entity.getBrand() != null ? entity.getBrand().getName() : null)
                 .providerId(entity.getProvider() != null ? entity.getProvider().getId() : null)
                 .providerName(entity.getProvider() != null ? entity.getProvider().getName() : null)
+                .salePriceManualOverride(entity.getSalePrice() != null && automaticSalePrice != null
+                        && entity.getSalePrice().compareTo(automaticSalePrice) != 0)
                 .hasImage(entity.getImages() != null && !entity.getImages().isEmpty())
                 .build();
     }
@@ -60,16 +69,22 @@ public class ProductMapper {
         entity.setCost(productRequestDto.cost());
         entity.setMargin(productRequestDto.margin());
         IvaType ivaType = resolveOrThrow(ivaTypeRepository::findById, productRequestDto.ivaTypeId(), "IvaType");
-        entity.setSalePrice(productRequestDto.salePrice() != null
-                ? productRequestDto.salePrice()
-                : calculateSalePrice(productRequestDto.cost(), productRequestDto.margin(), ivaType.getPercentage()));
+        Provider provider = resolveOrThrow(providerRepository::findById, productRequestDto.providerId(), "Provider");
+        BigDecimal discountPercentage = provider.getDiscountPercentage() == null
+                ? BigDecimal.ZERO : provider.getDiscountPercentage();
+        BigDecimal discountedCost = calculateDiscountedCost(productRequestDto.cost(), discountPercentage);
+        entity.setProviderDiscountPercentageApplied(discountPercentage);
+        entity.setDiscountedCost(discountedCost);
+        BigDecimal calculatedSalePrice = calculateSalePrice(discountedCost, productRequestDto.margin(), ivaType.getPercentage());
+        entity.setSalePrice(productRequestDto.salePriceManualOverride() && productRequestDto.salePrice() != null
+                ? productRequestDto.salePrice() : calculatedSalePrice);
         entity.setStock(productRequestDto.stock());
         entity.setMinStock(productRequestDto.minStock());
         entity.setCoin(resolveOrThrow(coinRepository::findById, productRequestDto.coinId(), "Coin"));
         entity.setIvaType(ivaType);
         entity.setCategory(resolveOrNull(categoryRepository::findById, productRequestDto.categoryId()));
         entity.setBrand(resolveOrNull(brandRepository::findById, productRequestDto.brandId()));
-        entity.setProvider(resolveOrThrow(providerRepository::findById, productRequestDto.providerId(), "Provider"));
+        entity.setProvider(provider);
         return entity;
     }
 
@@ -89,6 +104,13 @@ public class ProductMapper {
         return cost.multiply(marginMultiplier)
                 .multiply(ivaMultiplier)
                 .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal calculateDiscountedCost(BigDecimal invoiceCost, BigDecimal discountPercentage) {
+        if (invoiceCost == null || discountPercentage == null) return null;
+        BigDecimal discountMultiplier = BigDecimal.ONE.subtract(
+                discountPercentage.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+        return invoiceCost.multiply(discountMultiplier).setScale(2, RoundingMode.HALF_UP);
     }
 
     private <T> T resolveOrThrow(java.util.function.Function<Long, java.util.Optional<T>> finder,

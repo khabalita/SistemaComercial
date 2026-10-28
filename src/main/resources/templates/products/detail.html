@@ -60,6 +60,8 @@
                 <div class="detail-field"><label>Tipo de IVA</label><div class="detail-field-value" th:text="${product.ivaTypeDescription}"></div></div>
                 <div class="detail-field"><label>Moneda</label><div class="detail-field-value" th:text="${product.coinCode}"></div></div>
                 <div class="detail-field"><label>Costo</label><div class="detail-field-value" th:text="${product.coinCode + ' ' + product.cost}"></div></div>
+                <div class="detail-field"><label>Descuento del proveedor</label><div class="detail-field-value" th:text="${product.providerDiscountPercentageApplied + ' %'}"></div></div>
+                <div class="detail-field"><label>Costo final</label><div class="detail-field-value" th:text="${product.coinCode + ' ' + product.discountedCost}"></div></div>
                 <div class="detail-field"><label>Margen</label><div class="detail-field-value" th:text="${product.margin + ' %'}"></div></div>
                 <div class="detail-field"><label>Precio de venta</label><div class="detail-field-value" th:text="${product.coinCode + ' ' + product.salePrice}"></div></div>
             </div>
@@ -68,7 +70,15 @@
         <section class="detail-section">
             <h3 class="detail-section-title">Inventario</h3>
             <div class="detail-fields">
-                <div class="detail-field"><label>Stock actual</label><div class="detail-field-value" th:text="${product.stock}"></div></div>
+                <div class="detail-field stock-detail">
+                    <label>Stock actual</label>
+                    <div class="detail-field-value" th:text="${product.stock} + ' unidades'"></div>
+                    <span th:if="${product.stock <= 0}" class="stock-status danger">Sin stock</span>
+                    <span th:if="${product.stock > 0 and product.minStock != null and product.stock <= product.minStock}"
+                          class="stock-status low">Stock bajo</span>
+                    <span th:if="${product.stock > 0 and (product.minStock == null or product.stock > product.minStock)}"
+                          class="stock-status available">Disponible</span>
+                </div>
                 <div class="detail-field"><label>Stock minimo</label><div class="detail-field-value" th:classappend="${product.minStock == null} ? 'empty'" th:text="${product.minStock != null ? product.minStock : '-'}">-</div></div>
             </div>
         </section>
