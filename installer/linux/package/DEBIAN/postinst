@@ -28,41 +28,31 @@ case "${1:-}" in
             "$DATA_DIR" "$DATA_DIR/product-images" "$DATA_DIR/business-assets"
         install -d -o root -g "$APP_GROUP" -m 0750 "$CONFIG_DIR"
 
-        if [ ! -f "$CONFIG_FILE" ]; then
+        if [ -f "$CONFIG_FILE" ]; then
+            DB_PASSWORD="$(sed -n 's/^spring.datasource.password=//p' "$CONFIG_FILE" | head -n 1)"
+            case "$DB_PASSWORD" in
+                ''|*[!a-f0-9]*)
+                    echo "La configuración existente no contiene una contraseña MySQL válida: $CONFIG_FILE" >&2
+                    exit 1
+                    ;;
+            esac
+            if [ "${#DB_PASSWORD}" -ne 64 ]; then
+                echo "La configuración existente no contiene una contraseña MySQL válida: $CONFIG_FILE" >&2
+                exit 1
+            fi
+        else
             . /usr/share/debconf/confmodule
             db_get sistemacomercial/admin-password
             ADMIN_PASSWORD="$RET"
             if [ "${#ADMIN_PASSWORD}" -lt 8 ]; then
-                echo "La contraseña inicial del administrador debe tener al menos 8 caracteres." >&2
-                exit 1
-            fi
-
-            systemctl start mysql
-            mysql_ready=0
-            for _ in $(seq 1 60); do
-                if mysqladmin --protocol=socket --user=root ping >/dev/null 2>&1; then
-                    mysql_ready=1
-                    break
-                fi
-                sleep 1
-            done
-            if [ "$mysql_ready" -ne 1 ]; then
-                echo "MySQL no respondió. Revise el servicio mysql e intente configurar nuevamente el paquete." >&2
+                echo "No se recibió una contraseña inicial válida para admin (mínimo 8 caracteres). Ejecute: sudo dpkg-reconfigure sistemacomercial" >&2
                 exit 1
             fi
 
             DB_PASSWORD="$(openssl rand -hex 32)"
-            mysql --protocol=socket --user=root <<SQL
-CREATE DATABASE IF NOT EXISTS sistemacomercial CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'sistema_app'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
-ALTER USER 'sistema_app'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
-GRANT ALL PRIVILEGES ON sistemacomercial.* TO 'sistema_app'@'localhost';
-FLUSH PRIVILEGES;
-SQL
-
             ADMIN_PASSWORD_ESCAPED="$(escape_java_property "$ADMIN_PASSWORD")"
-            umask 027
-            cat > "$CONFIG_FILE" <<EOF
+            CONFIG_TMP="$(mktemp "$CONFIG_DIR/.application.properties.XXXXXX")"
+            cat > "$CONFIG_TMP" <<EOF
 spring.application.name=sistemacomercial
 spring.datasource.url=jdbc:mysql://localhost:3306/sistemacomercial?serverTimezone=America/Argentina/Buenos_Aires&useSSL=false&allowPublicKeyRetrieval=true
 spring.datasource.username=sistema_app
@@ -83,14 +73,56 @@ app.storage.business-assets=$DATA_DIR/business-assets
 app.security.initial-admin-username=admin
 app.security.initial-admin-password=$ADMIN_PASSWORD_ESCAPED
 EOF
-            db_set sistemacomercial/admin-password ""
+            install -o root -g "$APP_GROUP" -m 0640 "$CONFIG_TMP" "$CONFIG_FILE"
+            rm -f "$CONFIG_TMP"
         fi
 
+        # Persist the generated credentials before provisioning MySQL. If MySQL
+        # is unavailable, dpkg can be configured again with the same credentials.
+        if ! systemctl start mysql; then
+            echo "No se pudo iniciar MySQL. Revise 'systemctl status mysql' y vuelva a ejecutar: sudo dpkg --configure sistemacomercial" >&2
+            exit 1
+        fi
+        mysql_ready=0
+        for _ in $(seq 1 60); do
+            if mysqladmin --protocol=socket --user=root ping >/dev/null 2>&1; then
+                mysql_ready=1
+                break
+            fi
+            sleep 1
+        done
+        if [ "$mysql_ready" -ne 1 ]; then
+            echo "MySQL no respondió. Revise 'systemctl status mysql' y vuelva a ejecutar: sudo dpkg --configure sistemacomercial" >&2
+            exit 1
+        fi
+
+        if ! mysql --protocol=socket --user=root <<SQL
+CREATE DATABASE IF NOT EXISTS sistemacomercial CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'sistema_app'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
+ALTER USER 'sistema_app'@'localhost' IDENTIFIED BY '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON sistemacomercial.* TO 'sistema_app'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+        then
+            echo "No se pudo preparar la base de datos. Revise el acceso local de root a MySQL y vuelva a ejecutar: sudo dpkg --configure sistemacomercial" >&2
+            exit 1
+        fi
+
+        if [ -f /usr/share/debconf/confmodule ]; then
+            . /usr/share/debconf/confmodule
+            db_set sistemacomercial/admin-password ""
+        fi
         chown root:"$APP_GROUP" "$CONFIG_FILE"
         chmod 0640 "$CONFIG_FILE"
         systemctl daemon-reload
-        systemctl enable --now sistemacomercial.service
-        systemctl enable --now sistemacomercial-backup.timer
+        if ! systemctl enable --now sistemacomercial.service; then
+            echo "No se pudo iniciar Sistema Comercial. La configuración quedó en $CONFIG_FILE; revise 'journalctl -u sistemacomercial'." >&2
+            exit 1
+        fi
+        if ! systemctl enable --now sistemacomercial-backup.timer; then
+            echo "La aplicación inició, pero no se pudo activar el respaldo diario. Revise 'systemctl status sistemacomercial-backup.timer'." >&2
+            exit 1
+        fi
         echo "Sistema Comercial instalado. Abra http://localhost:8081/login e acceda como admin."
         ;;
 esac
