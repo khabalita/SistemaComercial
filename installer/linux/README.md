@@ -1,4 +1,4 @@
-# Instalador Linux (Ubuntu y Linux Mint)
+git # Instalador Linux (Ubuntu y Linux Mint)
 
 El paquete `.deb` está preparado para equipos **amd64** basados en Ubuntu, incluidos Linux Mint. Incluye un runtime Java 21 y configura MySQL, la aplicación como servicio `systemd` y respaldos diarios.
 
