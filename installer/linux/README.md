@@ -1,4 +1,4 @@
-git # Instalador Linux (Ubuntu y Linux Mint)
+# Instalador Linux (Ubuntu y Linux Mint)
 
 El paquete `.deb` está preparado para equipos **amd64** basados en Ubuntu, incluidos Linux Mint. Incluye un runtime Java 21 y configura MySQL, la aplicación como servicio `systemd` y respaldos diarios.
 
@@ -10,7 +10,7 @@ Descargá el artefacto `sistemacomercial_<versión>_amd64.deb` de GitHub Actions
 sudo apt install ./sistemacomercial_<versión>_amd64.deb
 ```
 
-Durante la instalación se solicita una contraseña inicial para `admin` (mínimo 8 caracteres). El instalador crea la base `sistemacomercial` y su usuario MySQL dedicado. Al finalizar, abrí `http://localhost:8081/login` o la entrada **Sistema Comercial** del menú de aplicaciones.
+Durante la instalación se solicita una contraseña inicial para `admin` (mínimo 8 caracteres). Si es más corta, el instalador vuelve a pedirla y no continúa con una respuesta vacía. El instalador crea la base `sistemacomercial` y su usuario MySQL dedicado. Al finalizar, abrí `http://localhost:8081/login` o la entrada **Sistema Comercial** del menú de aplicaciones.
 
 El archivo `/etc/sistemacomercial/application.properties` se genera durante la configuración del paquete, con permisos restringidos. Si MySQL no está disponible y `apt` deja el paquete sin configurar, el archivo y las credenciales generadas se conservan para poder reanudar el proceso:
 
@@ -19,7 +19,7 @@ sudo systemctl status mysql
 sudo dpkg --configure sistemacomercial
 ```
 
-Si la instalación se interrumpió antes de ingresar la contraseña de `admin`, volvé a abrir el diálogo con `sudo dpkg-reconfigure sistemacomercial`.
+Si una instalación anterior guardó una respuesta incorrecta, volvé a abrir el diálogo desde una terminal con `sudo dpkg-reconfigure -f readline sistemacomercial`. La nueva respuesta se guarda en la configuración de la aplicación, incluso si esta ya se había generado antes de que fallara la instalación. No hace falta borrar ni reinstalar MySQL. Los cambios de contraseña inicial solo crean el usuario `admin` si todavía no existe; para cambiar la contraseña de un usuario ya creado, hacelo desde la administración de usuarios de la aplicación.
 
 ## Servicio y registros
 

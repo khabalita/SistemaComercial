@@ -2,7 +2,41 @@
 set -e
 
 . /usr/share/debconf/confmodule
-db_input critical sistemacomercial/admin-password || true
-db_go || true
+
+PASSWORD_KEY="sistemacomercial/admin-password"
+CONFIG_FILE="/etc/sistemacomercial/application.properties"
+
+# Successful installs erase the debconf secret but retain its seen flag. This
+# lets normal upgrades skip the prompt while dpkg-reconfigure asks again.
+db_get "$PASSWORD_KEY"
+SAVED_PASSWORD="$RET"
+db_fget "$PASSWORD_KEY" seen
+PASSWORD_SEEN="$RET"
+if [ -f "$CONFIG_FILE" ] && [ -z "$SAVED_PASSWORD" ] && [ "$PASSWORD_SEEN" = true ]; then
+    exit 0
+fi
+if [ "${#SAVED_PASSWORD}" -ge 8 ] && [ "$PASSWORD_SEEN" = true ]; then
+    exit 0
+fi
+
+while :; do
+    db_fset "$PASSWORD_KEY" seen false
+    if ! db_input critical "$PASSWORD_KEY"; then
+        echo "No se pudo mostrar el diálogo de contraseña. Ejecute la instalación desde una terminal interactiva o configure la respuesta de Debconf previamente." >&2
+        exit 1
+    fi
+    if ! db_go; then
+        echo "No se pudo obtener la contraseña inicial de admin. Vuelva a ejecutar la configuración del paquete." >&2
+        exit 1
+    fi
+
+    db_get "$PASSWORD_KEY"
+    if [ "${#RET}" -ge 8 ]; then
+        exit 0
+    fi
+
+    echo "La contraseña debe tener al menos 8 caracteres. Ingrese una nueva contraseña." >&2
+    db_fset "$PASSWORD_KEY" seen false
+done
 
 exit 0
