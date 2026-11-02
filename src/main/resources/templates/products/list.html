@@ -79,6 +79,8 @@
                 <td>
                     <div class="product-price">
                         <strong th:text="${p.coinCode} + ' ' + ${p.salePrice}"></strong>
+                        <small th:if="${p.salePriceUpdatedAt != null}"
+                               th:text="|Actualizado: ${#temporals.format(p.salePriceUpdatedAt, 'dd/MM/yyyy')}|"></small>
                         <small th:if="${p.coinCode == 'USD' and p.salePriceArsEquivalent != null}"
                                th:text="|Equivalente: ARS ${p.salePriceArsEquivalent}|"></small>
                     </div>

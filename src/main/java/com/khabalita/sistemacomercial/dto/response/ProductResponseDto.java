@@ -3,6 +3,7 @@ package com.khabalita.sistemacomercial.dto.response;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Builder
 public record ProductResponseDto(
@@ -19,6 +20,7 @@ public record ProductResponseDto(
         BigDecimal discountedCost,
         BigDecimal margin,
         BigDecimal salePrice,
+        LocalDateTime salePriceUpdatedAt,
         BigDecimal salePriceArsEquivalent,
         Integer stock,
         Integer minStock,

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "product")
@@ -51,6 +52,9 @@ public class Product extends AuditableEntity {
 
     @Column(name = "sale_price", precision = 12, scale = 2)
     private BigDecimal salePrice;
+
+    @Column(name = "sale_price_updated_at")
+    private LocalDateTime salePriceUpdatedAt;
 
     @Column(name = "stock", nullable = false)
     private Integer stock;

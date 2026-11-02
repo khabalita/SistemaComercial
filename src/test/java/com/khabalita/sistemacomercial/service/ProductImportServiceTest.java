@@ -84,7 +84,7 @@ class ProductImportServiceTest {
     void import_optionalColumnsEmpty_usesDefaults() {
         ProductImportResult result = service.importProducts(file(
                         String.join(",", ProductImportService.HEADERS) + "\n"
-                        + "Producto,A-001,,,1000,,10,,,,\n"));
+                        + "Producto,A-001,,,1000,,,,10,,,,\n"));
 
         assertTrue(result.valid(), result.errors().toString());
         ArgumentCaptor<java.util.List<com.khabalita.sistemacomercial.Entities.Product>> captor =
@@ -113,7 +113,7 @@ class ProductImportServiceTest {
         provider.setDiscountPercentage(new BigDecimal("10.00"));
         ProductImportResult result = service.importProducts(file(
                 String.join(",", ProductImportService.HEADERS) + "\n"
-                        + "Producto,A-002,,,1000,,10,2,,,Proveedor\n"));
+                        + "Producto,A-002,,,1000,,,,10,2,,,Proveedor\n"));
 
         assertTrue(result.valid(), result.errors().toString());
         ArgumentCaptor<java.util.List<com.khabalita.sistemacomercial.Entities.Product>> captor =
@@ -126,12 +126,48 @@ class ProductImportServiceTest {
         assertEquals(0, new BigDecimal("900.00").compareTo(product.getSalePrice()));
     }
 
+    @Test
+    void import_readsMarginIvaAndCurrencyAndCalculatesSalePrice() {
+        Coin usd = Coin.builder().code("USD").name("Dolar").build();
+        IvaType iva21 = IvaType.builder().description("21%").percentage(new BigDecimal("21")).build();
+        when(coinRepository.findByCodeIgnoreCase("USD")).thenReturn(usd);
+        when(ivaTypeRepository.findByDescriptionIgnoreCase("21%")).thenReturn(iva21);
+
+        ProductImportResult result = service.importProducts(file(
+                String.join(",", ProductImportService.HEADERS) + "\n"
+                        + "Producto USD,A-003,,,1000,30,21%,USD,10,,,,\n"));
+
+        assertTrue(result.valid(), result.errors().toString());
+        ArgumentCaptor<java.util.List<com.khabalita.sistemacomercial.Entities.Product>> captor =
+                ArgumentCaptor.forClass(java.util.List.class);
+        verify(productRepository).saveAll(captor.capture());
+        com.khabalita.sistemacomercial.Entities.Product product = captor.getValue().get(0);
+        assertEquals(0, new BigDecimal("30").compareTo(product.getMargin()));
+        assertEquals(usd, product.getCoin());
+        assertEquals(iva21, product.getIvaType());
+        assertEquals(0, new BigDecimal("1573.00").compareTo(product.getSalePrice()));
+    }
+
+    @Test
+    void import_createsMissingBrand() {
+        when(brandRepository.findByNameIgnoreCase("Marca nueva")).thenReturn(null);
+        when(brandRepository.save(org.mockito.ArgumentMatchers.any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ProductImportResult result = service.importProducts(file(
+                String.join(",", ProductImportService.HEADERS) + "\n"
+                        + "Producto,A-004,,,1000,0,Exento,ARS,10,, ,Marca nueva,\n"));
+
+        assertTrue(result.valid(), result.errors().toString());
+        verify(brandRepository).save(org.mockito.ArgumentMatchers.argThat(
+                brand -> "Marca nueva".equals(brand.getName())));
+    }
+
     private MockMultipartFile file(String content) {
         return new MockMultipartFile("file", "products.csv", "text/csv", content.getBytes());
     }
 
     private String validRow() {
         return String.join(",", ProductImportService.HEADERS) + "\n"
-                + "Producto,A-001,,,1000,1000,10,2,,,Proveedor\n";
+                + "Producto,A-001,,,1000,0,Exento,ARS,10,2,,,Proveedor\n";
     }
 }

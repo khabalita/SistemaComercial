@@ -66,6 +66,8 @@
                 <div class="detail-field">
                     <label>Precio de venta</label>
                     <div class="detail-field-value" th:text="${product.coinCode + ' ' + product.salePrice}"></div>
+                    <small th:if="${product.salePriceUpdatedAt != null}"
+                           th:text="|Precio actualizado el ${#temporals.format(product.salePriceUpdatedAt, 'dd/MM/yyyy')}|"></small>
                     <small th:if="${product.coinCode == 'USD' and product.salePriceArsEquivalent != null}"
                            th:text="|Equivalente: ARS ${product.salePriceArsEquivalent}|"></small>
                 </div>

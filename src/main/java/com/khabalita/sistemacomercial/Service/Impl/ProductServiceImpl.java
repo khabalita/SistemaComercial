@@ -19,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class ProductServiceImpl implements IProductService {
     public ProductResponseDto saveProduct(ProductRequestDto productRequestDto) {
         validateProduct(productRequestDto);
         Product product = productMapper.toEntity(productRequestDto);
+        product.setSalePriceUpdatedAt(LocalDateTime.now());
         return productMapper.toDto(productRepository.save(product));
     }
 
@@ -130,6 +133,7 @@ public class ProductServiceImpl implements IProductService {
         Product existing = productRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + id));
         Product updated = productMapper.toEntity(productRequestDto);
+        boolean priceChanged = priceInputsChanged(existing, updated);
         existing.setName(updated.getName());
         existing.setInternalCode(updated.getInternalCode());
         existing.setBarCode(updated.getBarCode());
@@ -140,6 +144,7 @@ public class ProductServiceImpl implements IProductService {
         existing.setDiscountedCost(updated.getDiscountedCost());
         existing.setMargin(updated.getMargin());
         existing.setSalePrice(updated.getSalePrice());
+        if (priceChanged) existing.setSalePriceUpdatedAt(LocalDateTime.now());
         existing.setStock(updated.getStock());
         existing.setMinStock(updated.getMinStock());
         existing.setIvaType(updated.getIvaType());
@@ -173,7 +178,10 @@ public class ProductServiceImpl implements IProductService {
     @Audited("PRODUCT_PRICE_BULK_UPDATE")
     public int applyPriceUpdate(PriceUpdateRequest request) {
         List<Product> products = productsForPriceUpdate(request);
-        for (Product product : products) product.setSalePrice(changePreview(product, request).newPrice());
+        for (Product product : products) {
+            product.setSalePrice(changePreview(product, request).newPrice());
+            product.setSalePriceUpdatedAt(LocalDateTime.now());
+        }
         productRepository.saveAll(products);
         return products.size();
     }
@@ -200,6 +208,21 @@ public class ProductServiceImpl implements IProductService {
             throw new IllegalArgumentException("Tipo de ajuste no valido");
         if ("PERCENTAGE".equalsIgnoreCase(request.adjustmentType()) && request.value().compareTo(BigDecimal.valueOf(-100)) <= 0)
             throw new IllegalArgumentException("El porcentaje no puede reducir el precio a cero o menos");
+    }
+
+    private boolean priceInputsChanged(Product current, Product updated) {
+        return !Objects.equals(current.getCost(), updated.getCost())
+                || !Objects.equals(current.getProviderDiscountPercentageApplied(), updated.getProviderDiscountPercentageApplied())
+                || !Objects.equals(current.getDiscountedCost(), updated.getDiscountedCost())
+                || !Objects.equals(current.getMargin(), updated.getMargin())
+                || !Objects.equals(current.getSalePrice(), updated.getSalePrice())
+                || !sameId(current.getCoin(), updated.getCoin())
+                || !sameId(current.getIvaType(), updated.getIvaType());
+    }
+
+    private boolean sameId(com.khabalita.sistemacomercial.Entities.Base.BaseEntity first,
+                           com.khabalita.sistemacomercial.Entities.Base.BaseEntity second) {
+        return Objects.equals(first == null ? null : first.getId(), second == null ? null : second.getId());
     }
 
     private void validateProduct(ProductRequestDto dto) {

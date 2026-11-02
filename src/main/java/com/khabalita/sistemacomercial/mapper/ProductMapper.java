@@ -48,6 +48,9 @@ public class ProductMapper {
                 .discountedCost(discountedCost)
                 .margin(entity.getMargin())
                 .salePrice(salePrice)
+                .salePriceUpdatedAt(entity.getSalePriceUpdatedAt() != null
+                        ? entity.getSalePriceUpdatedAt()
+                        : entity.getUpdatedAt() != null ? entity.getUpdatedAt() : entity.getCreatedAt())
                 .salePriceArsEquivalent(salePriceArsEquivalent)
                 .stock(entity.getStock())
                 .minStock(entity.getMinStock())

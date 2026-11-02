@@ -11,7 +11,8 @@
     <div th:replace="~{fragments/layout :: flash}"></div>
     <div class="card">
         <h2>Importar productos</h2>
-        <p>Use la plantilla y complete los datos. Solo se crean productos nuevos; los códigos internos existentes se rechazan.</p>
+        <p>Use la plantilla y complete los datos. El precio de venta se calcula automáticamente con el costo final, margen e IVA. Solo se crean productos nuevos; los códigos internos existentes se rechazan.</p>
+        <p>Las marcas faltantes se crean automáticamente. Los proveedores deben existir previamente.</p>
         <p>
             <a th:href="@{/ui/products/template.xlsx}" class="button secondary">Descargar plantilla XLSX</a>
             <a th:href="@{/ui/products/template.csv}" class="button secondary">Descargar plantilla CSV</a>

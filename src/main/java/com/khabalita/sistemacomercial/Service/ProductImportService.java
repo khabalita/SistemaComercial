@@ -1,6 +1,9 @@
 package com.khabalita.sistemacomercial.Service;
 
 import com.khabalita.sistemacomercial.Entities.Product;
+import com.khabalita.sistemacomercial.Entities.Brand;
+import com.khabalita.sistemacomercial.Entities.Coin;
+import com.khabalita.sistemacomercial.Entities.IvaType;
 import com.khabalita.sistemacomercial.Entities.Provider;
 import com.khabalita.sistemacomercial.Repositories.BrandRepository;
 import com.khabalita.sistemacomercial.Repositories.CategoryRepository;
@@ -34,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,7 +54,7 @@ import java.util.stream.Collectors;
 public class ProductImportService {
 
     public static final List<String> HEADERS = List.of(
-            "nombre", "cod_interno", "cod_barras", "cod_proveedor", "costo", "precio_venta",
+            "nombre", "cod_interno", "cod_barras", "cod_proveedor", "costo", "margen", "iva", "moneda",
             "stock", "stock_min", "categoría", "marca", "proveedor");
     private static final BigDecimal DEFAULT_MARGIN = BigDecimal.ZERO;
     private static final String DEFAULT_IVA = "Exento";
@@ -126,7 +130,9 @@ public class ProductImportService {
     private List<String> productValues(Product product) {
         return List.of(safe(product.getName()), safe(product.getInternalCode()), safe(product.getBarCode()),
                 safe(product.getProviderCode()), product.getCost().toPlainString(),
-                product.getSalePrice() == null ? product.getCost().toPlainString() : product.getSalePrice().toPlainString(),
+                product.getMargin() == null ? "" : product.getMargin().toPlainString(),
+                product.getIvaType() == null ? "" : safe(product.getIvaType().getDescription()),
+                product.getCoin() == null ? "" : safe(product.getCoin().getCode()),
                 String.valueOf(product.getStock()),
                 product.getMinStock() == null ? "" : String.valueOf(product.getMinStock()),
                 product.getCategory() == null ? "" : safe(product.getCategory().getName()),
@@ -202,7 +208,8 @@ public class ProductImportService {
         return new ProductImportRow((int) rowNumber, values.get("nombre"), values.get("cod_interno"),
                 values.get("cod_barras"), values.get("cod_proveedor"),
                 decimal(values.get("costo"), (int) rowNumber, "costo"),
-                decimal(values.get("precio_venta"), (int) rowNumber, "precio_venta"),
+                decimalOrDefault(values.get("margen"), (int) rowNumber, "margen", DEFAULT_MARGIN),
+                values.get("iva"), values.get("moneda"),
                 integer(values.get("stock"), (int) rowNumber, "stock"), integer(values.get("stock_min"), (int) rowNumber, "stock_min"),
                 values.get("categoría"), values.get("marca"), values.get("proveedor"));
     }
@@ -215,7 +222,7 @@ public class ProductImportService {
             required(row.name(), prefix, "nombre", errors);
             required(row.internalCode(), prefix, "cod_interno", errors);
             if (row.cost() == null || row.cost().signum() <= 0) errors.add(prefix + "costo debe ser mayor a 0");
-            if (row.salePrice() != null && row.salePrice().signum() <= 0) errors.add(prefix + "precio_venta debe ser mayor a 0");
+            if (row.margin() == null || row.margin().signum() < 0) errors.add(prefix + "margen debe ser mayor o igual a 0");
             if (row.stock() == null || row.stock() < 0) errors.add(prefix + "stock debe ser mayor o igual a 0");
             if (row.minStock() != null && row.minStock() < 0) errors.add(prefix + "stock_min no puede ser negativo");
             if (row.internalCode() != null && !internalCodes.add(row.internalCode().toLowerCase(Locale.ROOT)))
@@ -230,12 +237,10 @@ public class ProductImportService {
     private void resolveRelations(ProductImportRow row, String prefix, List<String> errors) {
         if (coinRepository.findByCodeIgnoreCase("ARS") == null)
             errors.add(prefix + "la moneda ARS no esta configurada");
-        if (ivaTypeRepository.findByDescriptionIgnoreCase(DEFAULT_IVA) == null)
-            errors.add(prefix + "iva por defecto no existe: " + DEFAULT_IVA);
+        if (coin(row) == null) errors.add(prefix + "moneda no existe: " + defaultValue(row.coinCode(), "ARS"));
+        if (iva(row) == null) errors.add(prefix + "iva no existe: " + defaultValue(row.iva(), DEFAULT_IVA));
         if (!blank(row.categoryName()) && categoryRepository.findByNameIgnoreCase(row.categoryName()) == null)
             errors.add(prefix + "categoria no existe: " + row.categoryName());
-        if (!blank(row.brandName()) && brandRepository.findByNameIgnoreCase(row.brandName()) == null)
-            errors.add(prefix + "marca no existe: " + row.brandName());
         if (!blank(row.providerName()) && provider(row) == null)
             errors.add(prefix + "proveedor no existe: " + row.providerName());
     }
@@ -247,21 +252,56 @@ public class ProductImportService {
         BigDecimal discountMultiplier = BigDecimal.ONE.subtract(
                 discountPercentage.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
         BigDecimal discountedCost = row.cost().multiply(discountMultiplier).setScale(2, RoundingMode.HALF_UP);
+        Coin coin = coin(row);
+        IvaType iva = iva(row);
+        BigDecimal salePrice = calculateSalePrice(discountedCost, row.margin(), iva.getPercentage());
         Product product = Product.builder().name(row.name()).internalCode(row.internalCode())
-                .barCode(row.barCode()).providerCode(row.providerCode()).cost(row.cost()).margin(DEFAULT_MARGIN)
+                .barCode(row.barCode()).providerCode(row.providerCode()).cost(row.cost()).margin(row.margin())
                 .providerDiscountPercentageApplied(discountPercentage).discountedCost(discountedCost)
-                .salePrice(row.salePrice() == null ? discountedCost : row.salePrice())
+                .salePrice(salePrice).salePriceUpdatedAt(LocalDateTime.now())
                 .stock(row.stock()).minStock(row.minStock())
-                .coin(coinRepository.findByCodeIgnoreCase("ARS"))
-                .ivaType(ivaTypeRepository.findByDescriptionIgnoreCase(DEFAULT_IVA))
+                .coin(coin)
+                .ivaType(iva)
                 .category(blank(row.categoryName()) ? null : categoryRepository.findByNameIgnoreCase(row.categoryName()))
-                .brand(blank(row.brandName()) ? null : brandRepository.findByNameIgnoreCase(row.brandName()))
+                .brand(brand(row))
                 .provider(provider).build();
         return product;
     }
 
     private Provider provider(ProductImportRow row) {
         return blank(row.providerName()) ? null : providerRepository.findByNameIgnoreCase(row.providerName());
+    }
+
+    private Brand brand(ProductImportRow row) {
+        if (blank(row.brandName())) return null;
+        Brand existing = brandRepository.findByNameIgnoreCase(row.brandName());
+        return existing != null ? existing : brandRepository.save(Brand.builder().name(row.brandName().trim()).build());
+    }
+
+    private Coin coin(ProductImportRow row) {
+        return coinRepository.findByCodeIgnoreCase(defaultValue(row.coinCode(), "ARS"));
+    }
+
+    private IvaType iva(ProductImportRow row) {
+        String value = defaultValue(row.iva(), DEFAULT_IVA);
+        IvaType direct = ivaTypeRepository.findByDescriptionIgnoreCase(value);
+        if (direct != null) return direct;
+        String normalized = value.trim().replace("%", "").replace(",", ".");
+        try {
+            BigDecimal percentage = new BigDecimal(normalized).stripTrailingZeros();
+            for (IvaType candidate : ivaTypeRepository.findAll()) {
+                if (candidate.getPercentage().compareTo(percentage) == 0) return candidate;
+            }
+        } catch (NumberFormatException ignored) {
+            // The validation layer reports the missing IVA using the original value.
+        }
+        return null;
+    }
+
+    private BigDecimal calculateSalePrice(BigDecimal cost, BigDecimal margin, BigDecimal ivaPercentage) {
+        BigDecimal marginMultiplier = BigDecimal.ONE.add(margin.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+        BigDecimal ivaMultiplier = BigDecimal.ONE.add(ivaPercentage.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
+        return cost.multiply(marginMultiplier).multiply(ivaMultiplier).setScale(2, RoundingMode.HALF_UP);
     }
 
     private void validateHeaders(List<String> headers) {
@@ -294,6 +334,14 @@ public class ProductImportService {
         if (blank(value)) return null;
         try { return new BigDecimal(value.replace(",", ".")); }
         catch (NumberFormatException e) { throw new IllegalArgumentException("Fila " + row + ": " + field + " no es numerico"); }
+    }
+
+    private BigDecimal decimalOrDefault(String value, int row, String field, BigDecimal defaultValue) {
+        return blank(value) ? defaultValue : decimal(value, row, field);
+    }
+
+    private String defaultValue(String value, String defaultValue) {
+        return blank(value) ? defaultValue : value.trim();
     }
 
     private Integer integer(String value, int row, String field) {
