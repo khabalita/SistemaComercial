@@ -66,6 +66,12 @@ $sql = "CREATE DATABASE IF NOT EXISTS ``$DbName`` CHARACTER SET utf8mb4 COLLATE 
 & $Mysql --protocol=tcp -h 127.0.0.1 -u root -e $sql
 if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la base o el usuario de la aplicación." }
 
+# Verify the credentials that will be written to application.properties before
+# completing the installation. This prevents an apparently successful setup
+# with an unusable application database account.
+& $Mysql --protocol=tcp -h 127.0.0.1 -u $DbUser "-p$DbPassword" $DbName -e "SELECT 1" 2>$null
+if ($LASTEXITCODE -ne 0) { throw "Se creó la base, pero no se pudo validar el acceso de sistema_app." }
+
 @"
 spring.datasource.url=jdbc:mysql://localhost:3306/$DbName?serverTimezone=America/Argentina/Buenos_Aires&useSSL=false&allowPublicKeyRetrieval=true
 spring.datasource.username=$DbUser
