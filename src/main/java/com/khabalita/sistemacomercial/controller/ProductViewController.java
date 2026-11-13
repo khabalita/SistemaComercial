@@ -76,6 +76,13 @@ public class ProductViewController {
         return "products/list";
     }
 
+    @GetMapping("/price-check")
+    public String priceCheck(@RequestParam(required = false) String query, Model model) {
+        model.addAttribute("query", query);
+        model.addAttribute("priceCheckResults", productService.searchProductsForPriceCheck(query));
+        return "products/price-check";
+    }
+
     @PostMapping("/usd-rate")
     @PreAuthorize("hasRole('ADMIN')")
     public String updateUsdRate(@RequestParam BigDecimal usdRate, RedirectAttributes redirectAttributes) {

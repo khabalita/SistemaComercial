@@ -26,17 +26,20 @@ public class AuditAspect {
         } catch (Throwable exception) {
             try {
                 auditService.record(audited.value(), joinPoint.getTarget().getClass().getSimpleName(),
-                        entityId(joinPoint, null), exception.getClass().getSimpleName() + ": " + exception.getMessage(), "FAILURE");
+                        entityId(joinPoint, null),
+                        "No se pudo completar la operación. Revise los registros técnicos si necesita asistencia.",
+                        "FAILURE");
             } catch (Exception auditException) {
                 log.error("No se pudo registrar el fallo de auditoria para {}", audited.value(), auditException);
             }
+            log.error("Error técnico durante la operación {}", audited.value(), exception);
             throw exception;
         }
 
         try {
             String outcome = resultOutcome(result);
             auditService.record(audited.value(), joinPoint.getTarget().getClass().getSimpleName(),
-                    entityId(joinPoint, result), "Metodo: " + joinPoint.getSignature().getName(), outcome);
+                    entityId(joinPoint, result), "La operación se completó correctamente.", outcome);
         } catch (Exception auditException) {
             log.error("No se pudo registrar auditoria para {}", audited.value(), auditException);
         }

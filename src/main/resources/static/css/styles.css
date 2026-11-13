@@ -233,6 +233,23 @@ input, select {
 .usd-rate-form input { width: 125px; }
 .product-price { display: flex; flex-direction: column; gap: 3px; }
 .product-price small { color: var(--text-muted); font-size: 0.75rem; }
+.price-check-card { max-width: 760px; }
+.price-check-form { display: flex; flex-direction: column; gap: 8px; }
+.price-check-form input { font-size: 1.25rem; padding: 12px; }
+.price-check-form small, .muted { color: var(--text-muted); }
+.price-check-results { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.price-result { align-items: center; display: grid; gap: 16px; grid-template-columns: 1fr auto auto; margin: 0; }
+.price-result h2 { margin: 0; }
+.price-result p { margin: 6px 0 0; }
+.price-result-codes { font-family: monospace; letter-spacing: .02em; }
+.price-check-value { display: flex; flex-direction: column; gap: 4px; text-align: right; }
+.price-check-value strong { font-size: 1.5rem; }
+.price-check-value small { color: var(--text-muted); }
+.price-check-stock { min-width: 100px; text-align: right; }
+@media (max-width: 760px) {
+    .price-result { grid-template-columns: 1fr; }
+    .price-check-value, .price-check-stock { text-align: left; }
+}
 .flash { padding: 10px 14px; margin-bottom: 12px; border-radius: 6px; font-size: 0.9rem; }
 .flash-ok { background: var(--success-bg); color: var(--success-text); border-left: 4px solid var(--success-border); }
 .flash-err { background: var(--error-bg); color: var(--error-text); border-left: 4px solid var(--danger); }

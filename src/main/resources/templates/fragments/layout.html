@@ -19,6 +19,7 @@
     </div>
     <nav>
         <a th:href="@{/ui/products}"><span aria-hidden="true">▦</span> Productos</a>
+        <a th:href="@{/ui/products/price-check}"><span aria-hidden="true">⌕</span> Consultar precio</a>
         <th:block th:if="${isAdmin}">
             <a th:href="@{/ui/categories}"><span aria-hidden="true">▤</span> Categorías</a>
             <a th:href="@{/ui/brands}"><span aria-hidden="true">◇</span> Marcas</a>

@@ -62,5 +62,9 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
 
     Product findByBarCode(String barCode);
 
+    @EntityGraph(attributePaths = {"coin", "ivaType", "category", "brand", "provider"})
+    List<Product> findTop20ByNameContainingIgnoreCaseOrInternalCodeContainingIgnoreCaseOrderByNameAsc(
+            String name, String internalCode);
+
     Optional<Product> findByInternalCodeIgnoreCase(String internalCode);
 }

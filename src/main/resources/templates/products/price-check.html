@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultar precio</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main>
+    <div class="card price-check-card">
+        <h2>Consultar precio</h2>
+        <form method="get" th:action="@{/ui/products/price-check}" class="price-check-form">
+            <label for="price-check-query">Buscar producto</label>
+            <input id="price-check-query" name="query" type="search" th:value="${query}"
+                   autofocus autocomplete="off" placeholder="Escanear o escribir nombre o código...">
+            <button type="submit" class="button">Buscar</button>
+        </form>
+    </div>
+
+    <div class="card" th:if="${query != null and !query.isBlank() and #lists.isEmpty(priceCheckResults)}">
+        <p class="empty-state">No se encontró ningún producto.</p>
+    </div>
+
+    <div class="price-check-results" th:if="${!#lists.isEmpty(priceCheckResults)}">
+        <article class="card price-result" th:each="p : ${priceCheckResults}">
+            <div>
+                <h2 th:text="${p.name}"></h2>
+                <p class="muted price-result-codes">
+                    <span th:if="${p.barCode != null}" th:text="${p.barCode}"></span>
+                    <span th:if="${p.barCode != null and p.internalCode != null}"> · </span>
+                    <span th:if="${p.internalCode != null}" th:text="${p.internalCode}"></span>
+                </p>
+            </div>
+            <div class="price-check-value">
+                <strong th:text="${p.coinCode + ' ' + p.salePrice}"></strong>
+                <small th:if="${p.coinCode == 'USD' and p.salePriceArsEquivalent != null}"
+                       th:text="|Equivalente: ARS ${p.salePriceArsEquivalent}|"></small>
+                <small th:if="${p.salePriceUpdatedAt != null}"
+                       th:text="|Actualizado: ${#temporals.format(p.salePriceUpdatedAt, 'dd/MM/yyyy')}|"></small>
+            </div>
+            <div class="price-check-stock">
+                <span th:if="${p.stock <= 0}" class="stock-status danger">Sin stock</span>
+                <span th:if="${p.stock > 0 and p.minStock != null and p.stock <= p.minStock}"
+                      class="stock-status low">Stock bajo</span>
+                <span th:if="${p.stock > 0 and (p.minStock == null or p.stock > p.minStock)}"
+                      class="stock-status available">Disponible</span>
+            </div>
+        </article>
+    </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('price-check-query');
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    });
+</script>
+</body>
+</html>

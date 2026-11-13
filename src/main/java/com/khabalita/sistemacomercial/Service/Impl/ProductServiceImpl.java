@@ -116,6 +116,18 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDto> searchProductsForPriceCheck(String term) {
+        if (term == null || term.isBlank()) return List.of();
+        String normalized = term.trim();
+        Product exactBarcode = productRepository.findByBarCode(normalized);
+        if (exactBarcode != null) return List.of(productMapper.toDto(exactBarcode));
+        return productMapper.productResponseDtoList(
+                productRepository.findTop20ByNameContainingIgnoreCaseOrInternalCodeContainingIgnoreCaseOrderByNameAsc(
+                        normalized, normalized));
+    }
+
+    @Override
     @Transactional
     @Audited("PRODUCT_DELETE")
     public void deleteProductById(Long id) {

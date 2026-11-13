@@ -20,6 +20,7 @@ public interface IProductService {
                                               String provider, Pageable pageable);
     ProductResponseDto getProductById(Long id);
     ProductResponseDto getProductByBarCode(String barCode);
+    List<ProductResponseDto> searchProductsForPriceCheck(String term);
     void deleteProductById(Long id);
     ProductResponseDto updateProduct(Long id, ProductRequestDto productRequestDto);
     ProductResponseDto updateStock(Long id, Integer stock);

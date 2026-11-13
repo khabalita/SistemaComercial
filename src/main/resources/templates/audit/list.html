@@ -12,17 +12,16 @@
     <div class="card">
         <h2>Auditoría</h2>
         <table>
-            <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Resultado</th><th>Entidad</th><th>Detalle</th><th>IP</th></tr></thead>
+            <thead><tr><th>Fecha</th><th>Usuario</th><th>Qué hizo</th><th>Sobre qué</th><th>Resultado</th><th>Detalle</th></tr></thead>
             <tbody>
-            <tr th:if="${#lists.isEmpty(auditLogs)}"><td colspan="7">Sin registros.</td></tr>
+            <tr th:if="${#lists.isEmpty(auditLogs)}"><td colspan="6">Sin registros.</td></tr>
             <tr th:each="log : ${auditLogs}">
-                <td th:text="${log.createdAt}"></td>
+                <td th:text="${#temporals.format(log.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                 <td th:text="${log.username}"></td>
-                <td th:text="${log.action}"></td>
-                <td th:text="${log.outcome}"></td>
-                <td th:text="${log.entityType + (log.entityId != null ? ' #' + log.entityId : '')}"></td>
+                <td th:text="${@auditLabels.action(log.action)}"></td>
+                <td th:text="${@auditLabels.entity(log.entityType, log.entityId)}"></td>
+                <td th:text="${@auditLabels.outcome(log.outcome)}"></td>
                 <td th:text="${log.details}"></td>
-                <td th:text="${log.ipAddress}"></td>
             </tr>
             </tbody>
         </table>
