@@ -234,6 +234,8 @@ input, select {
 .usd-rate-form input { width: 125px; }
 .product-price { display: flex; flex-direction: column; gap: 3px; }
 .product-price small { color: var(--text-muted); font-size: 0.75rem; }
+.app-version { color: var(--text-muted); display: block; font-size: 0.75rem; margin-bottom: 8px; }
+.app-version-panel { color: var(--text-muted); font-size: 0.85rem; }
 .price-check-card { max-width: 760px; }
 .price-check-form { display: flex; flex-direction: column; gap: 8px; }
 .price-check-form input { font-size: 1.25rem; padding: 12px; }

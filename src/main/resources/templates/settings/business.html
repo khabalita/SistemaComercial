@@ -15,6 +15,7 @@
             <a th:href="@{/ui/products}" class="button secondary">Volver</a>
         </div>
         <p>El logo se mostrará en el sistema y en los comprobantes de venta. Formatos permitidos: JPG o PNG, hasta 5 MB.</p>
+        <p class="app-version-panel" th:text="|Versión instalada: ${appVersion}|"></p>
 
         <div class="business-logo-preview" th:if="${logoAvailable}">
             <img th:src="@{/ui/settings/logo}" alt="Logo actual del negocio">

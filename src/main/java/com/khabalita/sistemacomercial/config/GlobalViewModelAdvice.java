@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 public class GlobalViewModelAdvice {
 
     private final BusinessLogoService businessLogoService;
+    private final ApplicationVersion applicationVersion;
 
     @ModelAttribute
     public void addAuthenticatedUser(Model model, Authentication authentication) {
@@ -22,6 +23,7 @@ public class GlobalViewModelAdvice {
             model.addAttribute("currentRole", null);
             model.addAttribute("isAdmin", false);
             model.addAttribute("businessLogoAvailable", false);
+            model.addAttribute("appVersion", applicationVersion.value());
             return;
         }
 
@@ -35,5 +37,6 @@ public class GlobalViewModelAdvice {
         model.addAttribute("currentRole", role);
         model.addAttribute("isAdmin", "ADMIN".equals(role));
         model.addAttribute("businessLogoAvailable", businessLogoService.hasLogo());
+        model.addAttribute("appVersion", applicationVersion.value());
     }
 }

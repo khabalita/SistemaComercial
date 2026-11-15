@@ -2,7 +2,16 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-JAR="$ROOT_DIR/target/sistemacomercial-0.0.1-SNAPSHOT.jar"
+APP_VERSION="$(python3 - "$ROOT_DIR/pom.xml" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+namespace = "{http://maven.apache.org/POM/4.0.0}"
+root = ET.parse(sys.argv[1]).getroot()
+print(root.findtext(f"{namespace}version"))
+PY
+)"
+JAR="$ROOT_DIR/target/sistemacomercial-${APP_VERSION}.jar"
 PACKAGE_FILES="$ROOT_DIR/installer/linux/package"
 BUILD_DIR="$ROOT_DIR/target/linux-deb"
 STAGE_DIR="$BUILD_DIR/sistemacomercial"
@@ -18,15 +27,6 @@ if [[ -z "${JAVA_HOME:-}" || ! -x "$JAVA_HOME/bin/jlink" ]]; then
     exit 1
 fi
 
-APP_VERSION="$(python3 - "$ROOT_DIR/pom.xml" <<'PY'
-import sys
-import xml.etree.ElementTree as ET
-
-namespace = "{http://maven.apache.org/POM/4.0.0}"
-root = ET.parse(sys.argv[1]).getroot()
-print(root.findtext(f"{namespace}version"))
-PY
-)"
 DEB_VERSION="${APP_VERSION/-SNAPSHOT/~snapshot}"
 
 rm -rf "$STAGE_DIR"
@@ -37,6 +37,7 @@ mkdir -p \
     "$STAGE_DIR/usr/bin" \
     "$STAGE_DIR/usr/local/sbin" \
     "$STAGE_DIR/usr/share/applications" \
+    "$STAGE_DIR/usr/share/icons/hicolor/scalable/apps" \
     "$DIST_DIR"
 
 sed "s/@VERSION@/$DEB_VERSION/g" "$PACKAGE_FILES/DEBIAN/control.in" \
@@ -68,6 +69,8 @@ install -m 0755 "$PACKAGE_FILES/usr/bin/sistemacomercial" \
     "$STAGE_DIR/usr/bin/sistemacomercial"
 install -m 0644 "$PACKAGE_FILES/usr/share/applications/sistemacomercial.desktop" \
     "$STAGE_DIR/usr/share/applications/sistemacomercial.desktop"
+install -m 0644 "$ROOT_DIR/src/main/resources/static/images/sistemacomercial.svg" \
+    "$STAGE_DIR/usr/share/icons/hicolor/scalable/apps/sistemacomercial.svg"
 
 dpkg-deb --build --root-owner-group "$STAGE_DIR" \
     "$DIST_DIR/sistemacomercial_${DEB_VERSION}_amd64.deb"

@@ -5,3 +5,4 @@ Comment=Gestión local del comercio
 Exec=/usr/bin/sistemacomercial
 Terminal=false
 Categories=Office;
+Icon=sistemacomercial

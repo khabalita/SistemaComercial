@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${pageTitle} ?: 'Sistema Comercial'">Sistema Comercial</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/sistemacomercial.svg}">
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
@@ -32,6 +33,7 @@
         <a th:href="@{/ui/sales}"><span aria-hidden="true">▤</span> Ventas</a>
     </nav>
     <div class="sidebar-footer" th:if="${currentUsername}">
+        <small class="app-version" th:text="|Versión ${appVersion}|"></small>
         <button type="button" id="theme-toggle" class="sidebar-action theme-toggle" aria-pressed="false">
             <span><span class="theme-toggle-icon" aria-hidden="true">◐</span> <span class="theme-toggle-label">Modo oscuro</span></span>
         </button>

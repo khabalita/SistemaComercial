@@ -9,7 +9,9 @@ $ErrorActionPreference = "Stop"
 $InstallerDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectDir = Split-Path -Parent $InstallerDir
 $PayloadDir = Join-Path $InstallerDir "payload"
-$Jar = Join-Path $ProjectDir "target\sistemacomercial-0.0.1-SNAPSHOT.jar"
+$Pom = Join-Path $ProjectDir "pom.xml"
+$AppVersion = ([xml](Get-Content $Pom)).project.version
+$Jar = Join-Path $ProjectDir "target\sistemacomercial-$AppVersion.jar"
 
 if (-not (Test-Path $Jar)) {
     throw "No se encontró $Jar. Ejecutá .\mvnw.cmd clean package antes de preparar el instalador."
@@ -29,6 +31,7 @@ Copy-Item (Join-Path $InstallerDir "backup.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "uninstall.ps1") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "start-sistema.bat") $PayloadDir
 Copy-Item (Join-Path $InstallerDir "start-sistema.ps1") $PayloadDir
+Copy-Item (Join-Path $InstallerDir "sistemacomercial.ico") (Join-Path $PayloadDir "sistemacomercial.ico")
 
 $VcRedist = Join-Path $PayloadDir "vcredist_x64.exe"
 if (-not $SkipDownloads -and -not (Test-Path $VcRedist)) {

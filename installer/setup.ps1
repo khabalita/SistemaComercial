@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$AdminPassword
 )
 
@@ -8,19 +8,21 @@ $AppDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $MySqlDir = Join-Path $AppDir "mysql"
 $DataDir = Join-Path $MySqlDir "data"
 $ConfigDir = Join-Path $AppDir "config"
+$ConfigFile = Join-Path $ConfigDir "application.properties"
 $Ini = Join-Path $MySqlDir "my.ini"
 $ServiceName = "SistemaComercialMySQL"
 $DbName = "sistemacomercial"
 $DbUser = "sistema_app"
-$DbPassword = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+$IsUpgrade = Test-Path $ConfigFile
 
-if ($AdminPassword.Length -lt 8) {
+if (-not $IsUpgrade -and $AdminPassword.Length -lt 8) {
     throw "La contraseña inicial del administrador debe tener al menos 8 caracteres."
 }
 
 New-Item $ConfigDir -ItemType Directory -Force | Out-Null
 New-Item (Join-Path $AppDir "data\product-images") -ItemType Directory -Force | Out-Null
 New-Item (Join-Path $AppDir "data\business-assets") -ItemType Directory -Force | Out-Null
+New-Item (Join-Path $AppDir "logs") -ItemType Directory -Force | Out-Null
 
 $VcRedist = Join-Path $AppDir "vcredist_x64.exe"
 if (Test-Path $VcRedist) {
@@ -30,7 +32,12 @@ if (Test-Path $VcRedist) {
     }
 }
 
-@"
+$Mysqld = Join-Path $MySqlDir "bin\mysqld.exe"
+$Mysql = Join-Path $MySqlDir "bin\mysql.exe"
+
+if (-not $IsUpgrade) {
+    $DbPassword = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+    @"
 [mysqld]
 basedir=$($MySqlDir.Replace('\','/'))
 datadir=$($DataDir.Replace('\','/'))
@@ -40,47 +47,65 @@ character-set-server=utf8mb4
 collation-server=utf8mb4_unicode_ci
 log-error=$($AppDir.Replace('\','/'))/logs/mysql.err
 "@ | Set-Content -Path $Ini -Encoding ASCII
-New-Item (Join-Path $AppDir "logs") -ItemType Directory -Force | Out-Null
 
-$Mysqld = Join-Path $MySqlDir "bin\mysqld.exe"
-$Mysql = Join-Path $MySqlDir "bin\mysql.exe"
-if (-not (Get-Service $ServiceName -ErrorAction SilentlyContinue)) {
-    if (-not (Test-Path (Join-Path $DataDir "mysql"))) {
-        & $Mysqld --defaults-file=$Ini --initialize-insecure --console
-        if ($LASTEXITCODE -ne 0) { throw "No se pudo inicializar MySQL." }
+    if (-not (Get-Service $ServiceName -ErrorAction SilentlyContinue)) {
+        if (-not (Test-Path (Join-Path $DataDir "mysql"))) {
+            & $Mysqld --defaults-file=$Ini --initialize-insecure --console
+            if ($LASTEXITCODE -ne 0) { throw "No se pudo inicializar MySQL." }
+        }
+        & $Mysqld --install $ServiceName --defaults-file=$Ini
+        if ($LASTEXITCODE -ne 0) { throw "No se pudo instalar el servicio de MySQL." }
     }
-    & $Mysqld --install $ServiceName --defaults-file=$Ini
-    if ($LASTEXITCODE -ne 0) { throw "No se pudo instalar el servicio de MySQL." }
-}
 
-Start-Service $ServiceName
-$started = $false
-for ($i = 0; $i -lt 30; $i++) {
-    Start-Sleep -Seconds 1
-    & $Mysql --protocol=tcp -h 127.0.0.1 -u root -e "SELECT 1" 2>$null
-    if ($LASTEXITCODE -eq 0) { $started = $true; break }
-}
-if (-not $started) { throw "MySQL no respondió después de iniciar el servicio." }
+    Start-Service $ServiceName
+    $started = $false
+    for ($i = 0; $i -lt 30; $i++) {
+        Start-Sleep -Seconds 1
+        & $Mysql --protocol=tcp -h 127.0.0.1 -u root -e "SELECT 1" 2>$null
+        if ($LASTEXITCODE -eq 0) { $started = $true; break }
+    }
+    if (-not $started) { throw "MySQL no respondió después de iniciar el servicio." }
 
-$sql = "CREATE DATABASE IF NOT EXISTS ``$DbName`` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '$DbUser'@'localhost' IDENTIFIED BY '$DbPassword'; ALTER USER '$DbUser'@'localhost' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'localhost'; FLUSH PRIVILEGES;"
-& $Mysql --protocol=tcp -h 127.0.0.1 -u root -e $sql
-if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la base o el usuario de la aplicación." }
+    $sql = "CREATE DATABASE IF NOT EXISTS ``$DbName`` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; CREATE USER IF NOT EXISTS '$DbUser'@'localhost' IDENTIFIED BY '$DbPassword'; ALTER USER '$DbUser'@'localhost' IDENTIFIED BY '$DbPassword'; GRANT ALL PRIVILEGES ON ``$DbName``.* TO '$DbUser'@'localhost'; FLUSH PRIVILEGES;"
+    & $Mysql --protocol=tcp -h 127.0.0.1 -u root -e $sql
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la base o el usuario de la aplicación." }
 
-# Verify the credentials that will be written to application.properties before
-# completing the installation. This prevents an apparently successful setup
-# with an unusable application database account.
-& $Mysql --protocol=tcp -h 127.0.0.1 -u $DbUser "-p$DbPassword" $DbName -e "SELECT 1" 2>$null
-if ($LASTEXITCODE -ne 0) { throw "Se creó la base, pero no se pudo validar el acceso de sistema_app." }
+    & $Mysql --protocol=tcp -h 127.0.0.1 -u $DbUser "-p$DbPassword" $DbName -e "SELECT 1" 2>$null
+    if ($LASTEXITCODE -ne 0) { throw "Se creó la base, pero no se pudo validar el acceso de sistema_app." }
 
-@"
+    @"
 spring.datasource.url=jdbc:mysql://localhost:3306/$DbName?serverTimezone=America/Argentina/Buenos_Aires&useSSL=false&allowPublicKeyRetrieval=true
 spring.datasource.username=$DbUser
 spring.datasource.password=$DbPassword
 app.security.initial-admin-username=admin
 app.security.initial-admin-password=$AdminPassword
+logging.file.name=$($AppDir.Replace('\','/'))/logs/application.log
 app.storage.product-images=$($AppDir.Replace('\','/'))/data/product-images
 app.storage.business-assets=$($AppDir.Replace('\','/'))/data/business-assets
-"@ | Set-Content (Join-Path $ConfigDir "application.properties") -Encoding UTF8
+"@ | Set-Content $ConfigFile -Encoding UTF8
+} else {
+    # Upgrade: preserve the existing database credentials and configuration.
+    $DbPassword = (Get-Content $ConfigFile | Where-Object { $_ -like "spring.datasource.password=*" } |
+        Select-Object -First 1) -replace "^spring.datasource.password=", ""
+    if ([string]::IsNullOrWhiteSpace($DbPassword)) {
+        throw "No se encontró la contraseña de la base en la configuración existente."
+    }
+    if (-not (Test-Path $Ini)) {
+        throw "La configuración de MySQL no existe en la instalación actual."
+    }
+    if (-not (Get-Service $ServiceName -ErrorAction SilentlyContinue)) {
+        & $Mysqld --install $ServiceName --defaults-file=$Ini
+        if ($LASTEXITCODE -ne 0) { throw "No se pudo registrar nuevamente el servicio de MySQL." }
+    }
+    Start-Service $ServiceName
+    $started = $false
+    for ($i = 0; $i -lt 30; $i++) {
+        Start-Sleep -Seconds 1
+        & $Mysql --protocol=tcp -h 127.0.0.1 -u $DbUser "-p$DbPassword" $DbName -e "SELECT 1" 2>$null
+        if ($LASTEXITCODE -eq 0) { $started = $true; break }
+    }
+    if (-not $started) { throw "No se pudo validar la base existente durante la actualización." }
+}
 
 & (Join-Path $AppDir "backup.ps1") -InstallTask -DbPassword $DbPassword
-Write-Host "Instalación inicial completada. Usuario inicial: admin"
+Write-Host $(if ($IsUpgrade) { "Actualización completada conservando los datos existentes." } else { "Instalación inicial completada. Usuario inicial: admin" })

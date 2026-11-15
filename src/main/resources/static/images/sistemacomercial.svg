@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title>Sistema Comercial</title>
+  <rect width="256" height="256" rx="48" fill="#1f2937"/>
+  <path d="M72 72h112v32H104v24h64v32h-64v24h80v32H72z" fill="#93c5fd"/>
+  <circle cx="184" cy="72" r="18" fill="#2563eb"/>
+</svg>

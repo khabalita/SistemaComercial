@@ -39,7 +39,8 @@ jobs:
             '.\installer\payload\app\sistemacomercial.jar',
             '.\installer\payload\java\bin\java.exe',
             '.\installer\payload\mysql\bin\mysqld.exe',
-            '.\installer\payload\vcredist_x64.exe'
+            '.\installer\payload\vcredist_x64.exe',
+            '.\installer\payload\sistemacomercial.ico'
           )
           foreach ($file in $required) {
             if (-not (Test-Path $file)) {
@@ -53,7 +54,9 @@ jobs:
 
       - name: Compilar instalador
         shell: pwsh
-        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" ".\installer\SistemaComercial.iss"'
+        run: |
+          $version = ([xml](Get-Content .\pom.xml)).project.version
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$version" ".\installer\SistemaComercial.iss"
 
       - name: Publicar instalador
         uses: actions/upload-artifact@v4

@@ -1,5 +1,7 @@
 #define MyAppName "Sistema Comercial"
+#ifndef MyAppVersion
 #define MyAppVersion "1.0.0"
+#endif
 #define MyAppPublisher "Sistema Comercial"
 #define MyAppExeName "start-sistema.bat"
 
@@ -8,6 +10,7 @@ AppId={{B6B8EBD4-6C88-4B7B-AF17-7E2A2D08C5CC}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
+SetupIconFile=payload\sistemacomercial.ico
 DefaultDirName={localappdata}\SistemaComercial
 DefaultGroupName={#MyAppName}
 OutputDir=output
@@ -23,6 +26,7 @@ Source: "payload\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdi
 Source: "payload\java\*"; DestDir: "{app}\java"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "payload\mysql\*"; DestDir: "{app}\mysql"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "payload\vcredist_x64.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "payload\sistemacomercial.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\setup.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\backup.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\uninstall.ps1"; DestDir: "{app}"; Flags: ignoreversion
@@ -30,8 +34,8 @@ Source: "payload\start-sistema.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "payload\start-sistema.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\sistemacomercial.ico"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\sistemacomercial.ico"
 
 [UninstallRun]
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\uninstall.ps1"""; Flags: runhidden waituntilterminated
@@ -68,6 +72,12 @@ begin
       Result := False;
     end;
   end;
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := (PageID = AdminPasswordPage.ID) and
+    FileExists(ExpandConstant('{app}\config\application.properties'));
 end;
 
 function GetAdminPassword(Param: String): String;
