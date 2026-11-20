@@ -32,7 +32,7 @@ journalctl -u sistemacomercial -f
 
 Configuración: `/etc/sistemacomercial/application.properties`  
 Datos e imágenes: `/var/lib/sistemacomercial/`  
-Respaldos diarios de base e imágenes: `/var/backups/sistemacomercial/`
+Respaldos diarios de base e imágenes a las 10:00: `/var/backups/sistemacomercial/`. Si el equipo está apagado a esa hora, se omite la ejecución de ese día y se vuelve a intentar al día siguiente.
 
 Para detener o iniciar el servicio manualmente:
 

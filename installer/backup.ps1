@@ -31,7 +31,7 @@ if ((Test-Path `$BusinessAssets) -and (Get-ChildItem `$BusinessAssets -File -Rec
 Get-ChildItem `$BackupDir -File | Where-Object { `$_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item -Force
 "@ | Set-Content $script -Encoding UTF8
     $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$script`""
-    $trigger = New-ScheduledTaskTrigger -Daily -At 23:00
+    $trigger = New-ScheduledTaskTrigger -Daily -At 10:00
     $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
     Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal -Force | Out-Null
     return

@@ -9,7 +9,7 @@ Este instalador prepara una PC Windows nueva con:
 - La aplicación y su configuración.
 - Base de datos nueva `sistemacomercial`.
 - Usuario de base de datos exclusivo para la aplicación.
-- Backup diario a las 23:00.
+- Backup diario a las 10:00.
 - Backup de la base y de las imágenes.
 
 ## Requisitos de la PC donde se construye
@@ -56,7 +56,7 @@ La instalación no utiliza datos de MySQL anteriores. Hibernate crea el esquema 
 
 ## Backups
 
-La tarea programada `Sistema Comercial Backup` ejecuta un backup todos los días a las 23:00. Los archivos quedan en:
+La tarea programada `Sistema Comercial Backup` ejecuta un backup todos los días a las 10:00, siempre que la PC esté encendida. Si está apagada a esa hora, el backup de ese día se omite y se vuelve a intentar al día siguiente. Los archivos quedan en:
 
 ```text
 %LOCALAPPDATA%\SistemaComercial\backups\
