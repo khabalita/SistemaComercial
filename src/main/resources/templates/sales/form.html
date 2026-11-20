@@ -27,13 +27,12 @@
             <div class="form-grid">
                 <div>
                     <label>Cliente (opcional)</label>
-                    <select name="customerId">
-                        <option value="">-- Consumidor Final --</option>
-                        <option th:each="c : ${customers}"
-                                th:value="${c.id}"
-                                th:text="${c.name}"
-                                th:selected="${customerId != null and customerId == c.id}"></option>
-                    </select>
+                    <div class="customer-picker">
+                        <input type="text" id="customer-search" placeholder="Buscar cliente..." autocomplete="off"
+                               th:value="${customerName}">
+                        <input type="hidden" name="customerId" id="customer-id" th:value="${customerId}">
+                        <div id="customer-results" class="product-results" role="listbox"></div>
+                    </div>
                 </div>
                 <div>
                     <label>Forma de pago</label>
@@ -60,6 +59,8 @@
                             <input type="text" class="product-search" placeholder="Buscar por codigo o nombre..." autocomplete="off" required>
                             <input type="hidden" name="productId"
                                    th:value="${selectedProductIds != null and i <= selectedProductIds.size() ? selectedProductIds[i-1] : ''}">
+                            <span class="selected-product-label"
+                                  th:text="${selectedProductLabels != null and i <= selectedProductLabels.size() ? selectedProductLabels[i-1] : ''}"></span>
                             <div class="product-results" role="listbox"></div>
                         </div>
                     </div>
@@ -111,8 +112,6 @@
 
 <script th:inline="javascript">
     let lineIdx = /*[[${lineCount}]]*/ 1;
-    const products = /*[[${products}]]*/ [];
-
     function productLabel(product) {
         return `${product.internalCode || '-'} - ${product.name || '-'}`;
     }
@@ -179,7 +178,9 @@
             return;
         }
 
-        const matches = products.filter(product => productSearchText(product).includes(normalized)).slice(0, 15);
+        fetch('/ui/sales/products/search?query=' + encodeURIComponent(query.trim()))
+            .then(response => response.ok ? response.json() : [])
+            .then(matches => {
         if (!matches.length) {
             const empty = document.createElement('div');
             empty.className = 'product-result-empty';
@@ -197,11 +198,13 @@
             });
         }
         results.classList.add('open');
+            });
     }
 
     function selectProduct(picker, product) {
         const search = picker.querySelector('.product-search');
         search.value = productLabel(product);
+        picker.querySelector('.selected-product-label').textContent = productLabel(product);
         search.setCustomValidity('');
         picker.querySelector('input[name="productId"]').value = product.id;
         picker.querySelector('.product-results').classList.remove('open');
@@ -213,15 +216,15 @@
     function initializePicker(picker) {
         const search = picker.querySelector('.product-search');
         const hidden = picker.querySelector('input[name="productId"]');
-        const selected = products.find(product => String(product.id) === String(hidden.value));
-        if (selected) {
-            search.value = productLabel(selected);
-            picker.closest('.line-row').querySelector('.line-price').value = selected.salePrice || '';
-            setRowIva(picker.closest('.line-row'), selected);
+        if (hidden.value && !search.value) {
+            fetch('/ui/sales/products/' + encodeURIComponent(hidden.value))
+                .then(response => response.ok ? response.json() : null)
+                .then(selected => { if (selected) selectProduct(picker, selected); });
         }
 
         search.addEventListener('input', () => {
             hidden.value = '';
+            picker.querySelector('.selected-product-label').textContent = '';
             search.setCustomValidity('');
             showResults(picker, search.value);
         });
@@ -248,6 +251,7 @@
                 <div class="product-picker">
                     <input type="text" class="product-search" placeholder="Buscar por codigo o nombre..." autocomplete="off" required>
                     <input type="hidden" name="productId">
+                    <span class="selected-product-label"></span>
                     <div class="product-results" role="listbox"></div>
                 </div>
             </div>
@@ -285,6 +289,40 @@
         .forEach(input => input.addEventListener('input', updateSaleTotals));
     document.getElementById('generalDiscountPercent').addEventListener('input', updateSaleTotals);
     updateSaleTotals();
+
+    let customerSearchTimer;
+    const customerSearch = document.getElementById('customer-search');
+    const customerId = document.getElementById('customer-id');
+    const customerResults = document.getElementById('customer-results');
+    customerSearch.addEventListener('input', () => {
+        customerId.value = '';
+        clearTimeout(customerSearchTimer);
+        const query = customerSearch.value.trim();
+        if (!query) {
+            customerResults.classList.remove('open');
+            return;
+        }
+        customerSearchTimer = setTimeout(() => {
+            fetch('/ui/sales/customers/search?query=' + encodeURIComponent(query))
+                .then(response => response.ok ? response.json() : [])
+                .then(customers => {
+                    customerResults.replaceChildren();
+                    customers.forEach(customer => {
+                        const option = document.createElement('button');
+                        option.type = 'button';
+                        option.className = 'product-result';
+                        option.textContent = customer.name + (customer.taxId ? ' - ' + customer.taxId : '');
+                        option.addEventListener('click', () => {
+                            customerSearch.value = customer.name;
+                            customerId.value = customer.id;
+                            customerResults.classList.remove('open');
+                        });
+                        customerResults.appendChild(option);
+                    });
+                    customerResults.classList.toggle('open', customers.length > 0);
+                });
+        }, 250);
+    });
     document.getElementById('sale-form').addEventListener('submit', event => {
         const invalidPicker = [...document.querySelectorAll('.product-picker')]
             .find(picker => !picker.querySelector('input[name="productId"]').value);

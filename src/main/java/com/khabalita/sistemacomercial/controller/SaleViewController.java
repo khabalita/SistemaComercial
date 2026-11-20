@@ -7,6 +7,8 @@ import com.khabalita.sistemacomercial.Service.ISaleService;
 import com.khabalita.sistemacomercial.dto.request.ItemRequestDto;
 import com.khabalita.sistemacomercial.dto.request.SaleRequestDto;
 import com.khabalita.sistemacomercial.dto.response.SaleResponseDto;
+import com.khabalita.sistemacomercial.dto.response.ProductResponseDto;
+import com.khabalita.sistemacomercial.dto.response.CustomerResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -51,11 +54,28 @@ public class SaleViewController {
 
     @GetMapping("/new")
     public String newForm(Model model) {
-        model.addAttribute("customers", customerService.getAllCustomers());
-        model.addAttribute("products", productService.getAllProducts());
         model.addAttribute("lineCount", 1);
         model.addAttribute("paymentMethod", SalePaymentMethod.CASH);
         return "sales/form";
+    }
+
+    @GetMapping("/products/search")
+    @ResponseBody
+    public List<ProductResponseDto> searchProducts(@RequestParam String query) {
+        return productService.searchProductsForPriceCheck(query);
+    }
+
+    @GetMapping("/products/{id}")
+    @ResponseBody
+    public ProductResponseDto product(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
+
+    @GetMapping("/customers/search")
+    @ResponseBody
+    public List<CustomerResponseDto> searchCustomers(@RequestParam String query) {
+        return customerService.getCustomersPage(query,
+                PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "name"))).getContent();
     }
 
     @PostMapping("/new")
@@ -74,12 +94,26 @@ public class SaleViewController {
             ra.addFlashAttribute("ok", "Venta " + created.number() + " creada.");
             return "redirect:/ui/sales/" + created.id();
         } catch (Exception e) {
-            model.addAttribute("customers", customerService.getAllCustomers());
-            model.addAttribute("products", productService.getAllProducts());
             model.addAttribute("lineCount", productIds.size());
             model.addAttribute("customerId", customerId);
+            if (customerId != null) {
+                try {
+                    model.addAttribute("customerName", customerService.getCustomerById(customerId).name());
+                } catch (Exception ignored) {
+                    model.addAttribute("customerName", "");
+                }
+            }
             model.addAttribute("notes", notes);
             model.addAttribute("selectedProductIds", productIds);
+            model.addAttribute("selectedProductLabels", productIds.stream().map(id -> {
+                if (id == null) return "";
+                try {
+                    ProductResponseDto product = productService.getProductById(id);
+                    return product.internalCode() + " - " + product.name();
+                } catch (Exception ignored) {
+                    return "";
+                }
+            }).toList());
             model.addAttribute("quantities", quantities);
             model.addAttribute("lineDiscounts", discounts == null ? new ArrayList<>() : discounts);
             model.addAttribute("generalDiscountPercent", generalDiscountPercent);

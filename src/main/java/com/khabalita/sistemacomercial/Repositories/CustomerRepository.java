@@ -25,4 +25,7 @@ public interface CustomerRepository extends BaseRepository<Customer, Long> {
 
     @EntityGraph(attributePaths = {})
     Page<Customer> findAllBy(Pageable pageable);
+
+    @EntityGraph(attributePaths = {})
+    Page<Customer> findByActiveTrueAndNameContainingIgnoreCase(String name, Pageable pageable);
 }

@@ -4,6 +4,7 @@ import com.khabalita.sistemacomercial.Entities.Base.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.Index;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "customer")
+@Table(name = "customer", indexes = {
+        @Index(name = "idx_customer_name", columnList = "name")
+})
 @Getter
 @Setter
 @NoArgsConstructor

@@ -32,7 +32,15 @@ Crear la base y un usuario dedicado antes de iniciar la aplicacion. No utilizar 
 
 Realizar un backup de la base y de `data/product-images` antes de la primera ejecucion.
 
-La aplicacion usa `spring.jpa.hibernate.ddl-auto=update` para crear o actualizar las tablas durante la instalacion inicial. Una vez verificado el esquema, se recomienda cambiarlo a `validate`.
+Las migraciones posteriores se gestionan con Flyway y quedan registradas en `flyway_schema_history`. Las instalaciones existentes se incorporan mediante un baseline compatible, sin borrar ni recrear sus tablas.
+
+Durante la primera instalación, Hibernate conserva `ddl-auto=update` para crear el esquema inicial legado. Una vez que la aplicación haya arrancado correctamente, configurar `JPA_DDL_AUTO=validate` para impedir cambios automáticos del esquema:
+
+```text
+JPA_DDL_AUTO=validate
+```
+
+Desde ese momento, cada cambio estructural debe incorporarse como una migración nueva en `src/main/resources/db/migration`, con una versión consecutiva (`V3__...sql`, `V4__...sql`, etc.).
 
 Si la base fue creada con una version anterior que tenia estados de venta, ejecutar despues del backup:
 

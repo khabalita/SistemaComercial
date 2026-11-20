@@ -1,0 +1,3 @@
+-- Baseline lógico de instalaciones existentes.
+-- El esquema inicial fue creado por Hibernate en versiones anteriores.
+-- Las modificaciones posteriores deben agregarse como migraciones Flyway.
