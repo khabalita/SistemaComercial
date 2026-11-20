@@ -26,6 +26,7 @@ public record ProductResponseDto(
         Integer minStock,
         Long ivaTypeId,
         String ivaTypeDescription,
+        BigDecimal ivaPercentage,
         Long categoryId,
         String categoryName,
         Long brandId,

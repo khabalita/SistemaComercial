@@ -97,6 +97,7 @@
                     <strong id="sale-general-discount">0.00</strong>
                 </div>
                 <div><span>Descuento total</span><strong id="sale-discount">0.00</strong></div>
+                <div><span>IVA incluido</span><strong id="sale-iva">0.00</strong></div>
                 <div class="sale-total"><span>Total general</span><strong id="sale-total">0.00</strong></div>
             </div>
 
@@ -109,7 +110,7 @@
 </main>
 
 <script th:inline="javascript">
-    let lineIdx = /*[[${lineCount}]]*/ 3;
+    let lineIdx = /*[[${lineCount}]]*/ 1;
     const products = /*[[${products}]]*/ [];
 
     function productLabel(product) {
@@ -130,6 +131,10 @@
         return { gross, total };
     }
 
+    function setRowIva(row, product) {
+        row.dataset.ivaPercentage = product && product.ivaPercentage != null ? product.ivaPercentage : '0';
+    }
+
     function updateSaleTotals() {
         let subtotal = 0;
         let lineTotal = 0;
@@ -142,11 +147,17 @@
         const generalPercent = Number.parseFloat(document.getElementById('generalDiscountPercent').value) || 0;
         const generalDiscount = lineTotal * (generalPercent / 100);
         const total = lineTotal - generalDiscount;
+        const iva = [...document.querySelectorAll('.line-row')].reduce((sum, row) => {
+            const rowTotal = updateRowTotal(row).total;
+            const percentage = Number.parseFloat(row.dataset.ivaPercentage) || 0;
+            return sum + rowTotal * (1 - generalPercent / 100) * percentage / (100 + percentage);
+        }, 0);
         document.getElementById('sale-subtotal').textContent = formatAmount(subtotal);
         document.getElementById('sale-line-discount').textContent = formatAmount(lineDiscount);
         document.getElementById('sale-net-subtotal').textContent = formatAmount(lineTotal);
         document.getElementById('sale-general-discount').textContent = formatAmount(generalDiscount);
         document.getElementById('sale-discount').textContent = formatAmount(lineDiscount + generalDiscount);
+        document.getElementById('sale-iva').textContent = formatAmount(iva);
         document.getElementById('sale-total').textContent = formatAmount(total);
     }
 
@@ -195,6 +206,7 @@
         picker.querySelector('input[name="productId"]').value = product.id;
         picker.querySelector('.product-results').classList.remove('open');
         picker.closest('.line-row').querySelector('.line-price').value = product.salePrice || '';
+        setRowIva(picker.closest('.line-row'), product);
         updateSaleTotals();
     }
 
@@ -205,6 +217,7 @@
         if (selected) {
             search.value = productLabel(selected);
             picker.closest('.line-row').querySelector('.line-price').value = selected.salePrice || '';
+            setRowIva(picker.closest('.line-row'), selected);
         }
 
         search.addEventListener('input', () => {

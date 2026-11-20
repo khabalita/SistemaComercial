@@ -56,6 +56,7 @@ public class ProductMapper {
                 .minStock(entity.getMinStock())
                 .ivaTypeId(entity.getIvaType() != null ? entity.getIvaType().getId() : null)
                 .ivaTypeDescription(entity.getIvaType() != null ? entity.getIvaType().getDescription() : null)
+                .ivaPercentage(entity.getIvaType() != null ? entity.getIvaType().getPercentage() : null)
                 .categoryId(entity.getCategory() != null ? entity.getCategory().getId() : null)
                 .categoryName(entity.getCategory() != null ? entity.getCategory().getName() : null)
                 .brandId(entity.getBrand() != null ? entity.getBrand().getId() : null)

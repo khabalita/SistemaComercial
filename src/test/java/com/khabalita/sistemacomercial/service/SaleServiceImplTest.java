@@ -9,6 +9,7 @@ import com.khabalita.sistemacomercial.Entities.Item;
 import com.khabalita.sistemacomercial.Entities.Product;
 import com.khabalita.sistemacomercial.Entities.Provider;
 import com.khabalita.sistemacomercial.Entities.Sale;
+import com.khabalita.sistemacomercial.Entities.SalePaymentMethod;
 import com.khabalita.sistemacomercial.Entities.SaleSequence;
 import com.khabalita.sistemacomercial.Repositories.CustomerRepository;
 import com.khabalita.sistemacomercial.Repositories.ProductRepository;
@@ -165,6 +166,17 @@ class SaleServiceImplTest {
         SaleRequestDto dto = SaleRequestDto.builder()
                 .items(List.of(item(1L, 1, BigDecimal.ZERO)))
                 .generalDiscountPercent(new BigDecimal("100.01"))
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> service.createSale(dto));
+        verifyNoInteractions(productRepository, saleRepository);
+    }
+
+    @Test
+    void createSale_currentAccountWithoutCustomer_throwsBeforePersistence() {
+        SaleRequestDto dto = SaleRequestDto.builder()
+                .paymentMethod(SalePaymentMethod.CURRENT_ACCOUNT)
+                .items(List.of(item(1L, 1, BigDecimal.ZERO)))
                 .build();
 
         assertThrows(IllegalArgumentException.class, () -> service.createSale(dto));

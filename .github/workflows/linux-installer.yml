@@ -30,6 +30,9 @@ jobs:
       - name: Construir paquete Debian
         run: bash ./installer/linux/build-deb.sh
 
+      - name: Prueba de humo Linux
+        run: bash ./installer/linux/smoke-test.sh "$(find target/distributions -name '*.deb' -print -quit)"
+
       - name: Publicar paquete
         uses: actions/upload-artifact@v4
         with:

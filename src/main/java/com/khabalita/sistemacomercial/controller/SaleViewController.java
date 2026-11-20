@@ -53,7 +53,7 @@ public class SaleViewController {
     public String newForm(Model model) {
         model.addAttribute("customers", customerService.getAllCustomers());
         model.addAttribute("products", productService.getAllProducts());
-        model.addAttribute("lineCount", 3);
+        model.addAttribute("lineCount", 1);
         model.addAttribute("paymentMethod", SalePaymentMethod.CASH);
         return "sales/form";
     }
